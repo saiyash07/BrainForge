@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiPlay, HiPause, HiRefresh } from "react-icons/hi";
 
@@ -19,35 +19,31 @@ export default function PomodoroTimer() {
   });
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
-  const [progress, setProgress] = useState(100);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const svgRef = useRef(null);
 
   const resetTimer = useCallback((newMode = mode) => {
     setIsActive(false);
     setMode(newMode);
     setTimeLeft(customDurations[newMode] * 60);
-    setProgress(100);
   }, [mode, customDurations]);
 
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft((time) => {
-          const newTime = time - 1;
-          setProgress((newTime / (customDurations[mode] * 60)) * 100);
-          return newTime;
-        });
+        setTimeLeft((time) => time - 1);
       }, 1000);
     } else if (timeLeft === 0 && isActive) {
       setIsActive(false);
-      // Optional: Play a sound here
       try {
         const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
         audio.play();
       } catch (e) { }
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, mode, customDurations]);
+  }, [isActive, timeLeft]);
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -57,10 +53,72 @@ export default function PomodoroTimer() {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  // Convert current state to progress percentage (0 - 100) of 60 minutes
+  const getProgressPercentage = () => {
+    if (isActive) {
+      return (timeLeft / 3600) * 100;
+    }
+    return (customDurations[mode] / 60) * 100;
+  };
+
+  const progress = getProgressPercentage();
   const currentColor = MODES[mode].color;
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  // Knob Position Coordinates
+  const getKnobPosition = () => {
+    // Math.PI * 2 is full circle. Rotate by -Math.PI / 2 to start at top (12 o'clock)
+    const angle = (progress / 100) * 2 * Math.PI - Math.PI / 2;
+    const x = 100 + radius * Math.cos(angle);
+    const y = 100 + radius * Math.sin(angle);
+    return { x, y };
+  };
+
+  const knobPos = getKnobPosition();
+
+  // Dial Drag Handler
+  const handlePointerUpdate = useCallback((clientX, clientY) => {
+    if (!svgRef.current || isActive) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = clientX - centerX;
+    const dy = clientY - centerY;
+
+    let angle = Math.atan2(dy, dx) + Math.PI / 2;
+    if (angle < 0) {
+      angle += 2 * Math.PI;
+    }
+
+    // Convert angle to minutes (1 to 60)
+    let minutes = Math.round((angle / (2 * Math.PI)) * 60);
+    if (minutes < 1) minutes = 1;
+    if (minutes > 60) minutes = 60;
+
+    setCustomDurations((prev) => ({
+      ...prev,
+      [mode]: minutes,
+    }));
+    setTimeLeft(minutes * 60);
+  }, [mode, isActive]);
+
+  const handlePointerDown = (e) => {
+    if (isActive) return;
+    setIsDragging(true);
+    e.target.setPointerCapture(e.pointerId);
+    handlePointerUpdate(e.clientX, e.clientY);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    handlePointerUpdate(e.clientX, e.clientY);
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
 
   return (
     <div className="glass-card" style={styles.container}>
@@ -84,65 +142,84 @@ export default function PomodoroTimer() {
         </div>
       </div>
 
-      <div style={styles.timerContainer}>
-        <svg width="200" height="200" viewBox="0 0 200 200" style={styles.svg}>
+      <div 
+        style={{
+          ...styles.timerContainer,
+          cursor: isActive ? "default" : isDragging ? "grabbing" : "grab"
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <svg 
+          ref={svgRef}
+          width="200"
+          height="200" 
+          viewBox="0 0 200 200" 
+          style={styles.svg}
+        >
+          {/* Background dial track (showing 60 tick lines/dots for premium feel) */}
           <circle
             cx="100"
             cy="100"
             r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.05)"
-            strokeWidth="12"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="8"
           />
+          
+          {/* Main Active Timer Path */}
           <circle
             cx="100"
             cy="100"
             r={radius}
             fill="none"
             stroke={currentColor}
-            strokeWidth="12"
+            strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             style={{
-              transition: "stroke-dashoffset 1s linear, stroke 0.3s ease",
+              transition: isDragging ? "none" : "stroke-dashoffset 0.1s linear, stroke 0.3s ease",
+            }}
+          />
+
+          {/* Interactive Knob Pointer */}
+          <circle
+            cx={knobPos.x}
+            cy={knobPos.y}
+            r="12"
+            fill="#ffffff"
+            stroke={currentColor}
+            strokeWidth="3"
+            style={{
+              filter: "drop-shadow(0px 2px 6px rgba(0,0,0,0.3))",
+              transition: isDragging ? "none" : "cx 0.1s linear, cy 0.1s linear",
+              cursor: isActive ? "default" : "grab"
+            }}
+          />
+          <circle
+            cx={knobPos.x}
+            cy={knobPos.y}
+            r="4"
+            fill={currentColor}
+            style={{
+              transition: isDragging ? "none" : "cx 0.1s linear, cy 0.1s linear",
             }}
           />
         </svg>
         <div style={styles.timeDisplay}>
-          <motion.span
-            key={timeLeft}
-            initial={{ opacity: 0.5, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={styles.timeText}
-          >
-            {formatTime(timeLeft)}
-          </motion.span>
+          <div style={styles.timeWrapper}>
+            <span style={styles.timeText}>
+              {formatTime(timeLeft)}
+            </span>
+            {!isActive && (
+              <span style={styles.dragHint}>Drag to set</span>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Duration Slider - only shown when not active */}
-      {!isActive && (
-        <div style={styles.sliderContainer}>
-          <span style={styles.sliderLabel}>Duration: {customDurations[mode]} min</span>
-          <input
-            type="range"
-            min="1"
-            max="60"
-            value={customDurations[mode]}
-            onChange={(e) => {
-              const val = parseInt(e.target.value) || 1;
-              setCustomDurations((prev) => {
-                const updated = { ...prev, [mode]: val };
-                setTimeLeft(val * 60);
-                setProgress(100);
-                return updated;
-              });
-            }}
-            style={{ ...styles.slider, accentColor: currentColor }}
-          />
-        </div>
-      )}
 
       <div style={styles.controls}>
         <button
@@ -173,6 +250,8 @@ const styles = {
     alignItems: "center",
     position: "relative",
     overflow: "hidden",
+    userSelect: "none",
+    WebkitUserSelect: "none",
   },
   header: {
     width: "100%",
@@ -211,10 +290,12 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     marginBottom: "1.5rem",
+    touchAction: "none", // Prevent page scrolling during dragging
   },
   svg: {
     transform: "rotate(-90deg)",
     position: "absolute",
+    overflow: "visible", // Let the knob render outside path slightly
   },
   timeDisplay: {
     position: "absolute",
@@ -223,13 +304,28 @@ const styles = {
     justifyContent: "center",
     width: "100%",
     height: "100%",
+    pointerEvents: "none", // Allows pointer dragging on the parent container
+  },
+  timeWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   timeText: {
-    fontSize: "3.5rem",
+    fontSize: "3rem",
     fontWeight: 800,
     fontFamily: "var(--font-heading)",
     color: "var(--text-primary)",
     fontVariantNumeric: "tabular-nums",
+    lineHeight: 1,
+  },
+  dragHint: {
+    fontSize: "0.75rem",
+    color: "var(--text-muted)",
+    marginTop: "0.25rem",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    fontWeight: 500,
   },
   controls: {
     display: "flex",
@@ -259,27 +355,5 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-  },
-  sliderContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "0.5rem",
-    marginBottom: "1.25rem",
-  },
-  sliderLabel: {
-    fontSize: "0.85rem",
-    fontWeight: 600,
-    color: "var(--text-secondary)",
-  },
-  slider: {
-    width: "80%",
-    cursor: "pointer",
-    height: "6px",
-    borderRadius: "3px",
-    outline: "none",
-    background: "rgba(255,255,255,0.2)",
-    transition: "background 0.3s ease",
   },
 };
