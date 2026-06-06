@@ -105,69 +105,75 @@ export default function Navbar() {
 
       {/* Right Side: Avatar + Hamburger */}
       <div style={styles.userSection}>
-        {/* Avatar / Profile dropdown — always visible */}
-        <button
-          onClick={() => setProfileOpen(!profileOpen)}
-          style={styles.avatarBtn}
-          id="navbar-profile-btn"
+        {/* Avatar / Profile dropdown wrapper */}
+        <div
+          onMouseEnter={() => !isMobile && setProfileOpen(true)}
+          onMouseLeave={() => !isMobile && setProfileOpen(false)}
+          style={{ position: "relative", display: "flex", alignItems: "center" }}
         >
-          {user.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={user.displayName || "User"}
-              style={styles.avatar}
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div style={styles.avatarFallback}>
-              {(user.displayName || user.email || "U")[0].toUpperCase()}
-            </div>
-          )}
-        </button>
-
-        <AnimatePresence>
-          {profileOpen && (
-            <motion.div
-              style={styles.dropdown}
-              className="glass-strong"
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div style={styles.dropdownHeader}>
-                <p style={styles.dropdownName}>
-                  {user.displayName || "Student"}
-                </p>
-                <p style={styles.dropdownEmail}>{user.email}</p>
+          <button
+            onClick={() => isMobile && setProfileOpen(!profileOpen)}
+            style={styles.avatarBtn}
+            id="navbar-profile-btn"
+          >
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || "User"}
+                style={styles.avatar}
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div style={styles.avatarFallback}>
+                {(user.displayName || user.email || "U")[0].toUpperCase()}
               </div>
-              <div style={styles.dropdownDivider} />
-              <button
-                onClick={() => {
-                  signOut();
-                  setProfileOpen(false);
-                }}
-                style={styles.logoutBtn}
-                id="navbar-logout-btn"
+            )}
+          </button>
+
+          <AnimatePresence>
+            {profileOpen && (
+              <motion.div
+                style={styles.dropdown}
+                className="glass-strong"
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
               >
-                <HiLogout size={16} />
-                Sign Out
-              </button>
-              <div style={styles.dropdownDivider} />
-              <button
-                onClick={() => {
-                  handleClearData();
-                  setProfileOpen(false);
-                }}
-                style={styles.clearBtn}
-                id="navbar-clear-btn"
-              >
-                <HiTrash size={16} />
-                Clear Progress
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <div style={styles.dropdownHeader}>
+                  <p style={styles.dropdownName}>
+                    {user.displayName || "Student"}
+                  </p>
+                  <p style={styles.dropdownEmail}>{user.email}</p>
+                </div>
+                <div style={styles.dropdownDivider} />
+                <button
+                  onClick={() => {
+                    signOut();
+                    setProfileOpen(false);
+                  }}
+                  style={styles.logoutBtn}
+                  id="navbar-logout-btn"
+                >
+                  <HiLogout size={16} />
+                  Sign Out
+                </button>
+                <div style={styles.dropdownDivider} />
+                <button
+                  onClick={() => {
+                    handleClearData();
+                    setProfileOpen(false);
+                  }}
+                  style={styles.clearBtn}
+                  id="navbar-clear-btn"
+                >
+                  <HiTrash size={16} />
+                  Clear Progress
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Hamburger — only on mobile */}
         {isMobile && (
