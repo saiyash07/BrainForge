@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import NotificationManager from "@/components/NotificationManager";
 import { useAuth } from "@/lib/auth";
 import { addCalendarEvent, getCalendarEvents, deleteCalendarEvent, getTimetables } from "@/lib/firestore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -201,6 +202,8 @@ export default function CalendarPage() {
             </div>
           </div>
         </motion.div>
+
+        <NotificationManager />
 
         {/* Timeline View */}
         <motion.div style={styles.timelineContainer} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
