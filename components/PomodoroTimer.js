@@ -12,16 +12,21 @@ const MODES = {
 
 export default function PomodoroTimer() {
   const [mode, setMode] = useState("focus");
-  const [timeLeft, setTimeLeft] = useState(MODES.focus.minutes * 60);
+  const [customDurations, setCustomDurations] = useState({
+    focus: 25,
+    shortBreak: 5,
+    longBreak: 15,
+  });
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [progress, setProgress] = useState(100);
 
   const resetTimer = useCallback((newMode = mode) => {
     setIsActive(false);
     setMode(newMode);
-    setTimeLeft(MODES[newMode].minutes * 60);
+    setTimeLeft(customDurations[newMode] * 60);
     setProgress(100);
-  }, [mode]);
+  }, [mode, customDurations]);
 
   useEffect(() => {
     let interval = null;
@@ -29,7 +34,7 @@ export default function PomodoroTimer() {
       interval = setInterval(() => {
         setTimeLeft((time) => {
           const newTime = time - 1;
-          setProgress((newTime / (MODES[mode].minutes * 60)) * 100);
+          setProgress((newTime / (customDurations[mode] * 60)) * 100);
           return newTime;
         });
       }, 1000);
@@ -42,7 +47,7 @@ export default function PomodoroTimer() {
       } catch (e) { }
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, mode]);
+  }, [isActive, timeLeft, mode, customDurations]);
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -115,6 +120,29 @@ export default function PomodoroTimer() {
           </motion.span>
         </div>
       </div>
+
+      {/* Duration Slider - only shown when not active */}
+      {!isActive && (
+        <div style={styles.sliderContainer}>
+          <span style={styles.sliderLabel}>Duration: {customDurations[mode]} min</span>
+          <input
+            type="range"
+            min="1"
+            max="60"
+            value={customDurations[mode]}
+            onChange={(e) => {
+              const val = parseInt(e.target.value) || 1;
+              setCustomDurations((prev) => {
+                const updated = { ...prev, [mode]: val };
+                setTimeLeft(val * 60);
+                setProgress(100);
+                return updated;
+              });
+            }}
+            style={{ ...styles.slider, accentColor: currentColor }}
+          />
+        </div>
+      )}
 
       <div style={styles.controls}>
         <button
@@ -231,5 +259,27 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
+  },
+  sliderContainer: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "0.5rem",
+    marginBottom: "1.25rem",
+  },
+  sliderLabel: {
+    fontSize: "0.85rem",
+    fontWeight: 600,
+    color: "var(--text-secondary)",
+  },
+  slider: {
+    width: "80%",
+    cursor: "pointer",
+    height: "6px",
+    borderRadius: "3px",
+    outline: "none",
+    background: "rgba(255,255,255,0.2)",
+    transition: "background 0.3s ease",
   },
 };
