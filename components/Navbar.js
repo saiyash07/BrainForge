@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
@@ -33,6 +33,14 @@ export default function Navbar() {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   if (!user) return null;
 
@@ -46,36 +54,39 @@ export default function Navbar() {
         </span>
       </Link>
 
-      {/* Desktop Nav Links */}
-      <div style={styles.navLinks}>
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link key={item.href} href={item.href} style={styles.navLinkWrapper}>
-              <div
-                style={{
-                  ...styles.navLink,
-                  ...(isActive ? styles.navLinkActive : {}),
-                }}
-              >
-                <item.icon size={18} />
-                <span>{item.label}</span>
-              </div>
-              {isActive && (
-                <motion.div
-                  style={styles.activeIndicator}
-                  layoutId="navbar-indicator"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-            </Link>
-          );
-        })}
-      </div>
+      {/* Desktop Nav Links — hidden on mobile */}
+      {!isMobile && (
+        <div style={styles.navLinks}>
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link key={item.href} href={item.href} style={styles.navLinkWrapper}>
+                <div
+                  style={{
+                    ...styles.navLink,
+                    ...(isActive ? styles.navLinkActive : {}),
+                  }}
+                >
+                  <item.icon size={18} />
+                  <span>{item.label}</span>
+                </div>
+                {isActive && (
+                  <motion.div
+                    style={styles.activeIndicator}
+                    layoutId="navbar-indicator"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
-      {/* User Avatar */}
+      {/* Right Side: Avatar + Hamburger */}
       <div style={styles.userSection}>
+        {/* Avatar / Profile dropdown — always visible */}
         <button
           onClick={() => setProfileOpen(!profileOpen)}
           style={styles.avatarBtn}
@@ -127,19 +138,21 @@ export default function Navbar() {
           )}
         </AnimatePresence>
 
-        {/* Mobile menu toggle */}
-        <button
-          style={styles.menuToggle}
-          onClick={() => setMenuOpen(!menuOpen)}
-          id="navbar-mobile-menu"
-        >
-          {menuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
-        </button>
+        {/* Hamburger — only on mobile */}
+        {isMobile && (
+          <button
+            style={styles.menuToggle}
+            onClick={() => setMenuOpen(!menuOpen)}
+            id="navbar-mobile-menu"
+          >
+            {menuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
+          </button>
+        )}
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Dropdown Menu */}
       <AnimatePresence>
-        {menuOpen && (
+        {menuOpen && isMobile && (
           <motion.div
             style={styles.mobileMenu}
             className="glass-strong"
@@ -164,6 +177,14 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            <div style={styles.dropdownDivider} />
+            <button
+              onClick={() => { signOut(); setMenuOpen(false); }}
+              style={{ ...styles.logoutBtn, padding: "0.75rem 1rem" }}
+            >
+              <HiLogout size={18} />
+              Sign Out
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -317,12 +338,14 @@ const styles = {
     fontFamily: "var(--font-body)",
   },
   menuToggle: {
-    display: "none",
     background: "none",
     border: "none",
     cursor: "pointer",
     color: "var(--text-primary)",
     padding: "4px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   mobileMenu: {
     position: "absolute",
@@ -334,6 +357,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "0.25rem",
+    zIndex: 999,
   },
   mobileLink: {
     display: "flex",
@@ -353,13 +377,3 @@ const styles = {
     fontWeight: 600,
   },
 };
-
-// Inject responsive CSS for mobile menu toggle via module
-if (typeof document !== "undefined") {
-  const style = document.createElement("style");
-  style.textContent = `
-    @media (max-width: 768px) {
-      [style*="navLinks"] { display: none !important; }
-    }
-  `;
-}
