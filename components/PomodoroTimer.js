@@ -69,8 +69,8 @@ export default function PomodoroTimer() {
 
   // Knob Position Coordinates
   const getKnobPosition = () => {
-    // Math.PI * 2 is full circle. Rotate by -Math.PI / 2 to start at top (12 o'clock)
-    const angle = (progress / 100) * 2 * Math.PI - Math.PI / 2;
+    // The SVG itself is already rotated -90deg in CSS, so 0 rad is at 12 o'clock.
+    const angle = (progress / 100) * 2 * Math.PI;
     const x = 100 + radius * Math.cos(angle);
     const y = 100 + radius * Math.sin(angle);
     return { x, y };
