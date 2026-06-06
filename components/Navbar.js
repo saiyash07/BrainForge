@@ -353,11 +353,15 @@ const styles = {
     left: 0,
     right: 0,
     borderRadius: "16px",
-    padding: "1rem",
+    padding: "1.25rem",
     display: "flex",
     flexDirection: "column",
-    gap: "0.25rem",
-    zIndex: 999,
+    gap: "0.5rem",
+    zIndex: 9999,
+    background: "rgba(255, 255, 255, 0.98)", // Blocks out text behind it
+    backdropFilter: "blur(20px)",
+    boxShadow: "0 20px 40px rgba(31, 38, 135, 0.15)",
+    border: "1px solid rgba(255, 255, 255, 0.6)",
   },
   mobileLink: {
     display: "flex",
