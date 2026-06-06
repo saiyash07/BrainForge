@@ -685,3 +685,27 @@ h4 { font-size: 1.25rem; }
   animation: spin 20s linear infinite;
 }
 
+/* ============================================
+   Mobile Responsive — Auth Page
+   ============================================ */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 1.5rem !important;
+    gap: 1.5rem !important;
+    justify-content: flex-start !important;
+    padding-top: 3rem !important;
+  }
+
+  /* Hide the left branding section on mobile — too much clutter */
+  .auth-left-side {
+    display: none !important;
+  }
+
+  /* Make the form card full width on mobile */
+  .auth-right-side {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}

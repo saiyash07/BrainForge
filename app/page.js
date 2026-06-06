@@ -57,10 +57,11 @@ export default function AuthPage() {
   if (user) return null;
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="auth-container">
       {/* Left Side — Branding */}
       <motion.div
         style={styles.leftSide}
+        className="auth-left-side"
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8 }}
@@ -104,6 +105,7 @@ export default function AuthPage() {
       {/* Right Side — Auth Form */}
       <motion.div
         style={styles.rightSide}
+        className="auth-right-side"
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
