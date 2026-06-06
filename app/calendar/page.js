@@ -47,9 +47,17 @@ export default function CalendarPage() {
           const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // YYYY-MM-DD
           
           tt.schedule.forEach((lecture, idx) => {
+            let eventTitle = lecture.subject;
+            if (lecture.classroom || lecture.faculty) {
+              const details = [];
+              if (lecture.faculty) details.push(lecture.faculty);
+              if (lecture.classroom) details.push(lecture.classroom);
+              eventTitle += ` (${details.join(' • ')})`;
+            }
+
             automatedEvents.push({
               id: `auto-${tt.id}-${idx}`,
-              title: `${lecture.subject} (${lecture.classroom}) - ${lecture.faculty || 'No Faculty'}`,
+              title: eventTitle,
               type: "High", // Default energy type
               date: formattedDate,
               isAutomated: true,
