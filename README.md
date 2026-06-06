@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BrainForge 🧠⚡
 
-## Getting Started
+BrainForge is an AI-powered, all-in-one student productivity and learning platform. Built with Next.js, Firebase, and the Google Gemini API, it helps students automatically generate course materials from PDFs, track their energy-based tasks, manage their automated college timetables, and monitor their overall wellbeing.
 
-First, run the development server:
+## 🌟 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* **🤖 AI Subject Generator**: Upload a PDF syllabus or textbook, and our Gemini 1.5 Flash integration automatically extracts the topics, structures them into detailed modules, and generates 10 practice questions with hidden solutions!
+* **📅 Automated Timetable Calendar**: Syncs your weekly college timetable directly from your university emails via Google Apps Script. Highlights automated lectures distinctively from personal tasks.
+* **⚡ Energy-Based Task Scheduler**: Manage your daily tasks not just by priority, but by the energy required (High, Medium, Low). 
+* **🍅 Focus Pomodoro Timer**: Built-in Pomodoro tracker to help you power through your Forge Blocks.
+* **🇩🇪 Language Practice Module**: Dedicated German language practice section with interactive exercises and progress tracking.
+* **🧘‍♂️ Wellbeing Tracker**: Monitor your daily mood, sleep, and stress levels to ensure you don't burn out during heavy academic sprints.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Tech Stack
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+* **Frontend**: Next.js (React), framer-motion (animations), Chart.js (statistics)
+* **Backend**: Next.js API Routes (Node.js)
+* **Database**: Firebase Firestore
+* **Authentication**: Firebase Auth
+* **AI Model**: Google Generative AI (`gemini-1.5-flash`)
+* **Styling**: Vanilla CSS with Glassmorphism & Modern Mesh Gradients
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Getting Started
 
-## Learn More
+### Prerequisites
+* Node.js 18+
+* A Firebase Project (with Firestore and Auth enabled)
+* A Google Gemini API Key
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Saiyash07/BrainForge.git
+   cd BrainForge
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. Set up your environment variables by creating a `.env.local` file:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   
+   GEMINI_API_KEY=your_gemini_api_key
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
