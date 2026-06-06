@@ -130,6 +130,14 @@ export default function AuthPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
+              {isMobile && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.5rem", justifyContent: "center" }}>
+                  <span style={{ fontSize: "1.75rem" }}>🧠</span>
+                  <h1 style={{ fontSize: "1.75rem", fontWeight: 800, fontFamily: "var(--font-heading)", color: "var(--text-primary)", margin: 0 }}>
+                    Brain<span style={{ background: "linear-gradient(135deg, #6C63FF, #e84393)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Forge</span>
+                  </h1>
+                </div>
+              )}
               <h2 style={styles.formTitle}>
                 {isLogin ? "Welcome Back" : "Create Account"}
               </h2>
