@@ -11,23 +11,33 @@ export async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!data.date || !data.schedule) {
-      return NextResponse.json({ error: "Invalid payload format" }, { status: 400 });
+    if (!data.weeklySchedule || !Array.isArray(data.weeklySchedule)) {
+      return NextResponse.json({ error: "Invalid payload format. Expected weeklySchedule array." }, { status: 400 });
     }
 
-    // Convert date string to a safe ID (e.g., "25/05/26 (Monday)" -> "25-05-2026")
-    let idDate = data.date.split(" ")[0].replace(/\//g, "-");
+    // Loop through each day in the weekly schedule
+    for (const dayData of data.weeklySchedule) {
+      if (!dayData.date || !dayData.schedule) continue;
 
-    const timetableDoc = {
-      dateString: data.date,
-      schedule: data.schedule,
-      updatedAt: new Date().toISOString()
-    };
+      // Convert "25/05/26 (Monday)" into "25-05-2026"
+      const datePart = dayData.date.split(" ")[0]; // "25/05/26"
+      const [day, month, shortYear] = datePart.split("/");
+      
+      // Handle cases where the year might already be 4 digits
+      const year = shortYear.length === 2 ? `20${shortYear}` : shortYear;
+      const idDate = `${day}-${month}-${year}`;
 
-    // Save to Firestore under 'timetables' collection
-    await setDoc(doc(db, "timetables", idDate), timetableDoc);
+      const timetableDoc = {
+        dateString: dayData.date,
+        schedule: dayData.schedule,
+        updatedAt: new Date().toISOString()
+      };
 
-    return NextResponse.json({ success: true, message: "Timetable synced successfully!" });
+      // Save to Firestore under 'timetables' collection
+      await setDoc(doc(db, "timetables", idDate), timetableDoc);
+    }
+
+    return NextResponse.json({ success: true, message: "Weekly Timetable synced successfully!" });
   } catch (error) {
     console.error("Error syncing timetable:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
