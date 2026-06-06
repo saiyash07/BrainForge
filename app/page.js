@@ -14,8 +14,16 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, signInWithGoogle, signInWithEmail, signUp } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     if (user) router.push("/dashboard");
@@ -57,8 +65,9 @@ export default function AuthPage() {
   if (user) return null;
 
   return (
-    <div style={styles.container} className="auth-container">
-      {/* Left Side — Branding */}
+    <div style={{ ...styles.container, flexDirection: isMobile ? 'column' : 'row', padding: isMobile ? '2rem 1.5rem' : '2rem', justifyContent: isMobile ? 'center' : 'center' }} className="auth-container">
+      {/* Left Side — Branding (hidden on mobile) */}
+      {!isMobile && (
       <motion.div
         style={styles.leftSide}
         className="auth-left-side"
@@ -102,11 +111,13 @@ export default function AuthPage() {
         </div>
       </motion.div>
 
+      )}
+
       {/* Right Side — Auth Form */}
       <motion.div
-        style={styles.rightSide}
+        style={{ ...styles.rightSide, maxWidth: isMobile ? '100%' : '440px', width: isMobile ? '100%' : undefined }}
         className="auth-right-side"
-        initial={{ opacity: 0, x: 50 }}
+        initial={{ opacity: 0, x: isMobile ? 0 : 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
       >
