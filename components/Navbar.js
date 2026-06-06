@@ -16,7 +16,10 @@ import {
   HiX,
   HiClipboardCheck,
   HiCalendar,
+  HiTrash,
 } from "react-icons/hi";
+import { clearAllUserData } from "@/lib/firestore";
+
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: HiHome },
@@ -41,6 +44,22 @@ export default function Navbar() {
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  const handleClearData = async () => {
+    const confirmClear = window.confirm(
+      "WARNING: Are you sure you want to clear all your study data, streaks, and progress? This action cannot be undone."
+    );
+    if (!confirmClear) return;
+    
+    try {
+      await clearAllUserData(user.uid);
+      alert("All progress and data cleared successfully!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      alert("Failed to clear data. Please try again.");
+    }
+  };
 
   if (!user) return null;
 
@@ -134,6 +153,18 @@ export default function Navbar() {
                 <HiLogout size={16} />
                 Sign Out
               </button>
+              <div style={styles.dropdownDivider} />
+              <button
+                onClick={() => {
+                  handleClearData();
+                  setProfileOpen(false);
+                }}
+                style={styles.clearBtn}
+                id="navbar-clear-btn"
+              >
+                <HiTrash size={16} />
+                Clear Progress
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -184,6 +215,13 @@ export default function Navbar() {
             >
               <HiLogout size={18} />
               Sign Out
+            </button>
+            <button
+              onClick={() => { handleClearData(); setMenuOpen(false); }}
+              style={{ ...styles.clearBtn, padding: "0.75rem 1rem", width: "100%" }}
+            >
+              <HiTrash size={18} />
+              Clear Progress
             </button>
           </motion.div>
         )}
@@ -336,6 +374,22 @@ const styles = {
     borderRadius: "8px",
     transition: "background 0.2s",
     fontFamily: "var(--font-body)",
+  },
+  clearBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    width: "100%",
+    padding: "0.5rem",
+    background: "rgba(239, 68, 68, 0.1)",
+    border: "1px solid rgba(239, 68, 68, 0.2)",
+    cursor: "pointer",
+    fontSize: "0.85rem",
+    color: "#ef4444",
+    borderRadius: "8px",
+    transition: "all 0.2s ease",
+    fontFamily: "var(--font-body)",
+    fontWeight: 600,
   },
   menuToggle: {
     background: "none",
