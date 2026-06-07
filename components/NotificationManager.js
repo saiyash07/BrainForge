@@ -34,7 +34,7 @@ export default function NotificationManager() {
         
         // You MUST replace YOUR_VAPID_KEY below with the Web Push Certificate key from Firebase Console
         const currentToken = await getToken(messaging, { 
-          vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY 
+          vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY || "BIxqnYKyTxfDay4FfScOpjWKxHpp2DI2u93ANdjOFFNQEn0BFGcKFCD3x7D5rwjm3sMEp0UOADkA_lDTxXFfdnk"
         });
 
         if (currentToken) {
