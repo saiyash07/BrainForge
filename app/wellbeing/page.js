@@ -354,6 +354,7 @@ function TypingGame({ user }) {
 
 // ============= FOOTBALL QUIZ GAME =============
 const quizPool = [
+  // Existing questions
   {
     question: "Which country has won the most FIFA World Cups?",
     options: ["Germany", "Italy", "Argentina", "Brazil"],
@@ -403,6 +404,83 @@ const quizPool = [
     question: "Which country is host to the famous stadium 'Camp Nou'?",
     options: ["Italy", "Spain", "England", "Portugal"],
     correct: 1
+  },
+  // FC Barcelona questions
+  {
+    question: "Who is FC Barcelona's all-time top goalscorer?",
+    options: ["Ronaldinho", "Lionel Messi", "Cesar Rodriguez", "Luis Suarez"],
+    correct: 1
+  },
+  {
+    question: "In which year was FC Barcelona founded?",
+    options: ["1899", "1902", "1910", "1920"],
+    correct: 0
+  },
+  {
+    question: "What is the nickname of FC Barcelona's supporters?",
+    options: ["Culés", "Los Blancos", "Colchoneros", "Merengues"],
+    correct: 0
+  },
+  {
+    question: "Who was the manager of FC Barcelona during their historic sextuple-winning year in 2009?",
+    options: ["Luis Enrique", "Frank Rijkaard", "Pep Guardiola", "Johan Cruyff"],
+    correct: 2
+  },
+  {
+    question: "Which stadium did FC Barcelona play their home matches at before Camp Nou?",
+    options: ["Montjuïc", "Les Corts", "Sarrià", "San Mamés"],
+    correct: 1
+  },
+  {
+    question: "Which legendary Brazilian player scored a famous hat-trick against Real Madrid in 1994 for Barcelona?",
+    options: ["Romario", "Ronaldo Nazario", "Rivaldo", "Ronaldinho"],
+    correct: 0
+  },
+  {
+    question: "Who is the youngest goalscorer in FC Barcelona's history?",
+    options: ["Bojan Krkic", "Lionel Messi", "Lamine Yamal", "Ansu Fati"],
+    correct: 2
+  },
+  // More general trivia
+  {
+    question: "Which player has won the most Ballon d'Or awards in history?",
+    options: ["Cristiano Ronaldo", "Michel Platini", "Lionel Messi", "Johan Cruyff"],
+    correct: 2
+  },
+  {
+    question: "Which country won the first-ever FIFA World Cup in 1930?",
+    options: ["Brazil", "Argentina", "Uruguay", "Italy"],
+    correct: 2
+  },
+  {
+    question: "Who is the all-time top scorer in World Cup history?",
+    options: ["Miroslav Klose", "Ronaldo Nazario", "Pele", "Just Fontaine"],
+    correct: 0
+  },
+  {
+    question: "Which club has won the most Premier League titles?",
+    options: ["Liverpool", "Arsenal", "Chelsea", "Manchester United"],
+    correct: 3
+  },
+  {
+    question: "Which player scored the fastest hat-trick in Premier League history (2 min 56 seconds)?",
+    options: ["Sadio Mané", "Erling Haaland", "Robbie Fowler", "Alan Shearer"],
+    correct: 0
+  },
+  {
+    question: "Which country has won the most UEFA European Championships?",
+    options: ["Spain & Germany", "Italy & France", "Portugal & Greece", "England & Netherlands"],
+    correct: 0
+  },
+  {
+    question: "Who is the only manager to win the UEFA Champions League four times?",
+    options: ["Pep Guardiola", "Carlo Ancelotti", "Alex Ferguson", "Zinedine Zidane"],
+    correct: 1
+  },
+  {
+    question: "Which team went undefeated ('The Invincibles') in the 2003-04 Premier League season?",
+    options: ["Manchester United", "Chelsea", "Liverpool", "Arsenal"],
+    correct: 3
   }
 ];
 
@@ -426,10 +504,41 @@ function FootballQuiz({ user }) {
   }, [user]);
 
   const startQuiz = () => {
-    const shuffled = [...quizPool]
+    // Retrieve already used question indices from sessionStorage
+    let usedIndexes = [];
+    try {
+      const stored = sessionStorage.getItem("football_quiz_used_indexes");
+      if (stored) {
+        usedIndexes = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    // Filter out used questions
+    let availablePool = quizPool.map((q, idx) => ({ ...q, originalIndex: idx }))
+      .filter(q => !usedIndexes.includes(q.originalIndex));
+
+    // If remaining pool has fewer than 5 questions, reset history
+    if (availablePool.length < 5) {
+      availablePool = quizPool.map((q, idx) => ({ ...q, originalIndex: idx }));
+      usedIndexes = [];
+    }
+
+    // Shuffle and pick 5
+    const selected = [...availablePool]
       .sort(() => Math.random() - 0.5)
       .slice(0, 5);
-    setQuestions(shuffled);
+
+    // Save newly used indexes
+    const newUsedIndexes = [...usedIndexes, ...selected.map(q => q.originalIndex)];
+    try {
+      sessionStorage.setItem("football_quiz_used_indexes", JSON.stringify(newUsedIndexes));
+    } catch (e) {
+      console.error(e);
+    }
+
+    setQuestions(selected);
     setCurrentIdx(0);
     setScore(0);
     setIsPlaying(true);
