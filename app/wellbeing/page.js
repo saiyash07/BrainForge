@@ -1066,7 +1066,34 @@ const footlePlayers = [
   { name: "Vinicius Jr", nation: "Brazil", league: "La Liga", club: "Real Madrid", pos: "Forward", age: 25 },
   { name: "Neymar Jr", nation: "Brazil", league: "Saudi Pro League", club: "Al-Hilal", pos: "Forward", age: 34 },
   { name: "Bukayo Saka", nation: "England", league: "Premier League", club: "Arsenal", pos: "Forward", age: 24 },
-  { name: "Lamine Yamal", nation: "Spain", league: "La Liga", club: "FC Barcelona", pos: "Forward", age: 18 }
+  { name: "Lamine Yamal", nation: "Spain", league: "La Liga", club: "FC Barcelona", pos: "Forward", age: 18 },
+  // Midfielders
+  { name: "Martin Odegaard", nation: "Norway", league: "Premier League", club: "Arsenal", pos: "Midfielder", age: 27 },
+  { name: "Rodri", nation: "Spain", league: "Premier League", club: "Manchester City", pos: "Midfielder", age: 29 },
+  { name: "Pedri", nation: "Spain", league: "La Liga", club: "FC Barcelona", pos: "Midfielder", age: 23 },
+  { name: "Gavi", nation: "Spain", league: "La Liga", club: "FC Barcelona", pos: "Midfielder", age: 21 },
+  { name: "Toni Kroos", nation: "Germany", league: "La Liga", club: "Real Madrid", pos: "Midfielder", age: 36 },
+  { name: "Luka Modric", nation: "Croatia", league: "La Liga", club: "Real Madrid", pos: "Midfielder", age: 40 },
+  { name: "Bruno Fernandes", nation: "Portugal", league: "Premier League", club: "Manchester United", pos: "Midfielder", age: 31 },
+  { name: "Declan Rice", nation: "England", league: "Premier League", club: "Arsenal", pos: "Midfielder", age: 27 },
+  // Defenders
+  { name: "Virgil van Dijk", nation: "Netherlands", league: "Premier League", club: "Liverpool", pos: "Defender", age: 34 },
+  { name: "Ronald Araujo", nation: "Uruguay", league: "La Liga", club: "FC Barcelona", pos: "Defender", age: 27 },
+  { name: "Jules Kounde", nation: "France", league: "La Liga", club: "FC Barcelona", pos: "Defender", age: 27 },
+  { name: "William Saliba", nation: "France", league: "Premier League", club: "Arsenal", pos: "Defender", age: 25 },
+  { name: "Ruben Dias", nation: "Portugal", league: "Premier League", club: "Manchester City", pos: "Defender", age: 29 },
+  { name: "Alphonso Davies", nation: "Canada", league: "Bundesliga", club: "Bayern Munich", pos: "Defender", age: 25 },
+  { name: "Achraf Hakimi", nation: "Morocco", league: "Ligue 1", club: "Paris Saint-Germain", pos: "Defender", age: 27 },
+  { name: "Theo Hernandez", nation: "France", league: "Serie A", club: "AC Milan", pos: "Defender", age: 28 },
+  { name: "Kyle Walker", nation: "England", league: "Premier League", club: "Manchester City", pos: "Defender", age: 36 },
+  { name: "Marquinhos", nation: "Brazil", league: "Ligue 1", club: "Paris Saint-Germain", pos: "Defender", age: 32 },
+  // Goalkeepers
+  { name: "Marc-Andre ter Stegen", nation: "Germany", league: "La Liga", club: "FC Barcelona", pos: "Goalkeeper", age: 34 },
+  { name: "Alisson Becker", nation: "Brazil", league: "Premier League", club: "Liverpool", pos: "Goalkeeper", age: 33 },
+  { name: "Thibaut Courtois", nation: "Belgium", league: "La Liga", club: "Real Madrid", pos: "Goalkeeper", age: 34 },
+  { name: "Manuel Neuer", nation: "Germany", league: "Bundesliga", club: "Bayern Munich", pos: "Goalkeeper", age: 40 },
+  { name: "Ederson", nation: "Brazil", league: "Premier League", club: "Manchester City", pos: "Goalkeeper", age: 32 },
+  { name: "Gianluigi Donnarumma", nation: "Italy", league: "Ligue 1", club: "Paris Saint-Germain", pos: "Goalkeeper", age: 27 }
 ];
 
 function Footle({ user }) {
@@ -1221,6 +1248,169 @@ function Footle({ user }) {
           <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem", textAlign: "center" }}>
             Tries left: {6 - guesses.length}
           </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============= BARCELONA THIS OR THAT =============
+const barcaPlayersPool = {
+  GK: [
+    { name: "Marc-Andre ter Stegen", role: "Current German wall and captain. Excellent reflexes and distribution.", cover: "🧤" },
+    { name: "Victor Valdes", role: "Legendary goalkeeper of the Guardiola era. Won 3 UCL titles.", cover: "🏆" },
+    { name: "Claudio Bravo", role: "Treble winner, Zamora trophy holder, incredible composure.", cover: "🇨🇱" },
+    { name: "Andoni Zubizarreta", role: "Legendary goalkeeper of the Cruyff 'Dream Team'.", cover: "🇪🇸" }
+  ],
+  Defence: [
+    { name: "Carles Puyol", role: "Iconic captain, epitome of passion, courage, and defensive grit.", cover: "🦁" },
+    { name: "Ronald Araujo", role: "Current defensive leader. Unmatched strength and speed.", cover: "🇺🇾" },
+    { name: "Gerard Pique", role: "Elegant, ball-playing defender. Won everything with Barça.", cover: "3️⃣" },
+    { name: "Dani Alves", role: "Arguably the greatest right-back ever. Incredible chemistry with Messi.", cover: "🇧🇷" },
+    { name: "Javier Mascherano", role: "The chief. Fearless tackler and team player.", cover: "🇦🇷" },
+    { name: "Jules Kounde", role: "Versatile, fashionable, rock-solid at center/right back.", cover: "🇫🇷" },
+    { name: "Alejandro Balde", role: "Explosive speed down the left flank. Crucial for transition.", cover: "⚡" },
+    { name: "Rafa Marquez", role: "The Kaiser of Michoacan. Masterful long passes and defensive vision.", cover: "🇲🇽" }
+  ],
+  Midfield: [
+    { name: "Andres Iniesta", role: "Master of space, dribbling wizard, scorer of the most iconic goals.", cover: "🪄" },
+    { name: "Xavi Hernandez", role: "The conductor. Controlled the tempo of football history.", cover: "🧠" },
+    { name: "Sergio Busquets", role: "The perfect pivot. Made the most complex role look simple.", cover: "⚓" },
+    { name: "Pedri", role: "Golden Boy, magical touch, incredible football intelligence.", cover: " Canary" },
+    { name: "Gavi", role: "Fierce competitor, infinite energy, plays with his heart on his sleeve.", cover: "🔥" },
+    { name: "Frenkie de Jong", role: "Dynamic midfielder, brilliant ball-carrier and progressor.", cover: "🇳🇱" },
+    { name: "Deco", role: "Superb playmaker, key link in Ronaldinho's era.", cover: "🇵🇹" },
+    { name: "Cesc Fabregas", role: "La Masia graduate, brilliant vision and attacking threat.", cover: "🇪🇸" }
+  ],
+  Forward: [
+    { name: "Lionel Messi", role: "The GOAT. 672 goals, 778 games, countless moments of pure magic.", cover: "👑" },
+    { name: "Ronaldinho", role: "The man who brought the smile back to Barcelona. Pure joy on the pitch.", cover: "🤙" },
+    { name: "Luis Suarez", role: "El Pistolero. Unstoppable striker, third all-time top scorer.", cover: "🔫" },
+    { name: "Neymar Jr", role: "Samba magic. Crucial part of the legendary MSN trident.", cover: "🇧🇷" },
+    { name: "Samuel Eto'o", role: "Lethal predator. Scored in two Champions League finals.", cover: "🦁" },
+    { name: "Thierry Henry", role: "Va-Va-Voom. Elegant finisher, treble winner.", cover: "🇫🇷" },
+    { name: "Robert Lewandowski", role: "Pichichi winner, world class striker leading the current line.", cover: "⚽" },
+    { name: "Lamine Yamal", role: "Record-breaking prodigy. The future of Barcelona.", cover: "💎" },
+    { name: "Rivaldo", role: "Ballon d'Or winner, scorer of the legendary overhead kick vs Valencia.", cover: "🇧🇷" },
+    { name: "Romario", role: "Samba genius. Unbelievable finisher of the Dream Team.", cover: "⚽" }
+  ]
+};
+
+function ThisOrThat() {
+  const [section, setSection] = useState(null); // Forward, Midfield, Defence, GK
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [matchups, setMatchups] = useState([]);
+  const [currentMatch, setCurrentMatch] = useState(0);
+  const [selections, setSelections] = useState([]);
+  const [gameOver, setGameOver] = useState(false);
+
+  const startSection = (sec) => {
+    setSection(sec);
+    const pool = barcaPlayersPool[sec];
+    
+    // Generate 5 matchups randomly
+    const generated = [];
+    for (let i = 0; i < 5; i++) {
+      let p1 = pool[Math.floor(Math.random() * pool.length)];
+      let p2 = pool[Math.floor(Math.random() * pool.length)];
+      while (p1.name === p2.name) {
+        p2 = pool[Math.floor(Math.random() * pool.length)];
+      }
+      generated.push({ p1, p2 });
+    }
+    
+    setMatchups(generated);
+    setCurrentMatch(0);
+    setSelections([]);
+    setGameOver(false);
+    setIsPlaying(true);
+  };
+
+  const makeSelection = (player) => {
+    const newSelections = [...selections, player];
+    setSelections(newSelections);
+    
+    if (currentMatch < matchups.length - 1) {
+      setCurrentMatch((c) => c + 1);
+    } else {
+      setIsPlaying(false);
+      setGameOver(true);
+    }
+  };
+
+  const resetGame = () => {
+    setSection(null);
+    setIsPlaying(false);
+    setGameOver(false);
+  };
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>⚖️ Barça This or That</h3>
+      </div>
+
+      {!section && !gameOver ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Select a position to match up legends and current stars!</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", width: "100%" }}>
+            <button onClick={() => startSection("Forward")} className="btn btn-glass btn-sm" id="tot-fw">Forwards ⚽</button>
+            <button onClick={() => startSection("Midfield")} className="btn btn-glass btn-sm" id="tot-mid">Midfields 🧠</button>
+            <button onClick={() => startSection("Defence")} className="btn btn-glass btn-sm" id="tot-def">Defenders 🛡️</button>
+            <button onClick={() => startSection("GK")} className="btn btn-glass btn-sm" id="tot-gk">Goalkeepers 🧤</button>
+          </div>
+        </div>
+      ) : gameOver ? (
+        <div style={gameStyles.startScreen}>
+          <p style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.75rem", color: "var(--accent)" }}>
+            Your Selected Favorites ({section}):
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%", textAlign: "left", marginBottom: "1rem" }}>
+            {selections.map((p, idx) => (
+              <div key={idx} className="glass-subtle" style={{ padding: "0.5rem 0.75rem", borderRadius: "8px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>{p.cover}</span>
+                <span style={{ fontWeight: 600 }}>{p.name}</span>
+              </div>
+            ))}
+          </div>
+          <button onClick={resetGame} className="btn btn-primary btn-sm" id="tot-restart">
+            Play Again
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={gameStyles.gameStats}>
+            <span>Matchup {currentMatch + 1} of 5</span>
+            <span>Category: {section}</span>
+          </div>
+
+          <p style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text-secondary)", textAlign: "center", marginBottom: "1rem" }}>
+            Who would you choose as the best?
+          </p>
+
+          <div style={{ display: "flex", gap: "1rem", flexDirection: "column" }}>
+            {[matchups[currentMatch]?.p1, matchups[currentMatch]?.p2].map((p, idx) => (
+              <motion.div
+                key={idx}
+                onClick={() => makeSelection(p)}
+                className="glass-card"
+                style={{
+                  padding: "1rem",
+                  borderRadius: "16px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  background: "rgba(255, 255, 255, 0.04)"
+                }}
+                whileHover={{ scale: 1.02, background: "rgba(255, 255, 255, 0.08)", borderColor: "var(--accent)" }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span style={{ fontSize: "2rem" }}>{p?.cover}</span>
+                <h4 style={{ margin: "0.25rem 0", fontSize: "1.1rem" }}>{p?.name}</h4>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>{p?.role}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -1763,6 +1953,9 @@ export default function WellbeingPage() {
             </div>
             <div className="glass-card" style={styles.gameCard}>
               <Footle user={user} />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <ThisOrThat />
             </div>
           </motion.div>
         )}
