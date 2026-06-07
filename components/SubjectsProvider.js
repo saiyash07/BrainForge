@@ -22,7 +22,14 @@ export function SubjectsProvider({ children }) {
   const refreshSubjects = async () => {
     try {
       const dbSubs = await getAllSubjectsFromDb();
-      setSubjects([...hardcodedSubjects, ...dbSubs]);
+      // Deduplicate: Prioritize local hardcodedSubjects so updates show up immediately
+      const combined = [...hardcodedSubjects];
+      for (const sub of dbSubs) {
+        if (!combined.some(s => s.id === sub.id)) {
+          combined.push(sub);
+        }
+      }
+      setSubjects(combined);
     } catch (err) {
       console.error(err);
     }
