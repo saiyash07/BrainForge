@@ -1299,40 +1299,52 @@ const barcaPlayersPool = {
 function ThisOrThat() {
   const [section, setSection] = useState(null); // Forward, Midfield, Defence, GK
   const [isPlaying, setIsPlaying] = useState(false);
-  const [matchups, setMatchups] = useState([]);
-  const [currentMatch, setCurrentMatch] = useState(0);
-  const [selections, setSelections] = useState([]);
+  const [activeKing, setActiveKing] = useState(null);
+  const [activeChallenger, setActiveChallenger] = useState(null);
+  const [remainingPool, setRemainingPool] = useState([]);
+  const [currentMatch, setCurrentMatch] = useState(0); // 0 to 4
+  const [history, setHistory] = useState([]); // Selected matchups history
   const [gameOver, setGameOver] = useState(false);
 
   const startSection = (sec) => {
     setSection(sec);
-    const pool = barcaPlayersPool[sec];
+    const pool = [...barcaPlayersPool[sec]].sort(() => Math.random() - 0.5);
     
-    // Generate 5 matchups randomly
-    const generated = [];
-    for (let i = 0; i < 5; i++) {
-      let p1 = pool[Math.floor(Math.random() * pool.length)];
-      let p2 = pool[Math.floor(Math.random() * pool.length)];
-      while (p1.name === p2.name) {
-        p2 = pool[Math.floor(Math.random() * pool.length)];
-      }
-      generated.push({ p1, p2 });
-    }
+    // Pick the first two players
+    const king = pool[0];
+    const challenger = pool[1];
+    const rest = pool.slice(2);
     
-    setMatchups(generated);
+    setActiveKing(king);
+    setActiveChallenger(challenger);
+    setRemainingPool(rest);
     setCurrentMatch(0);
-    setSelections([]);
+    setHistory([]);
     setGameOver(false);
     setIsPlaying(true);
   };
 
-  const makeSelection = (player) => {
-    const newSelections = [...selections, player];
-    setSelections(newSelections);
-    
-    if (currentMatch < matchups.length - 1) {
+  const makeSelection = (chosen) => {
+    const unchosen = chosen.name === activeKing.name ? activeChallenger : activeKing;
+    const roundHistory = {
+      winner: chosen,
+      loser: unchosen
+    };
+    const newHistory = [...history, roundHistory];
+    setHistory(newHistory);
+
+    if (currentMatch < 4 && remainingPool.length > 0) {
+      // Pick next challenger
+      const nextChallenger = remainingPool[0];
+      const rest = remainingPool.slice(1);
+      
+      setActiveKing(chosen); // The winner remains the king
+      setActiveChallenger(nextChallenger); // New challenger
+      setRemainingPool(rest);
       setCurrentMatch((c) => c + 1);
     } else {
+      // Game over, final king remains
+      setActiveKing(chosen);
       setIsPlaying(false);
       setGameOver(true);
     }
@@ -1362,14 +1374,24 @@ function ThisOrThat() {
         </div>
       ) : gameOver ? (
         <div style={gameStyles.startScreen}>
-          <p style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.75rem", color: "var(--accent)" }}>
-            Your Selected Favorites ({section}):
+          <p style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--accent)", marginBottom: "0.5rem" }}>
+            🏆 Your Ultimate Choice:
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%", textAlign: "left", marginBottom: "1rem" }}>
-            {selections.map((p, idx) => (
-              <div key={idx} className="glass-subtle" style={{ padding: "0.5rem 0.75rem", borderRadius: "8px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span>{p.cover}</span>
-                <span style={{ fontWeight: 600 }}>{p.name}</span>
+          <div className="glass-card" style={{ padding: "1rem", borderRadius: "16px", textAlign: "center", width: "100%", border: "1px solid var(--accent)", background: "rgba(108,99,255,0.08)", marginBottom: "1rem" }}>
+            <span style={{ fontSize: "2.5rem" }}>{activeKing?.cover}</span>
+            <h4 style={{ margin: "0.25rem 0", fontSize: "1.3rem", fontWeight: 700 }}>{activeKing?.name}</h4>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>{activeKing?.role}</p>
+          </div>
+
+          <p style={{ fontSize: "0.9rem", fontWeight: 700, alignSelf: "flex-start", marginBottom: "0.4rem" }}>
+            Matchup History:
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", width: "100%", textAlign: "left", marginBottom: "1.25rem" }}>
+            {history.map((h, idx) => (
+              <div key={idx} className="glass-subtle" style={{ padding: "0.4rem 0.6rem", borderRadius: "8px", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "space-between", fontSize: "0.8rem" }}>
+                <span>✅ {h.winner.name}</span>
+                <span style={{ opacity: 0.4 }}>vs</span>
+                <span style={{ textDecoration: "line-through", opacity: 0.5 }}>{h.loser.name}</span>
               </div>
             ))}
           </div>
@@ -1389,7 +1411,7 @@ function ThisOrThat() {
           </p>
 
           <div style={{ display: "flex", gap: "1rem", flexDirection: "column" }}>
-            {[matchups[currentMatch]?.p1, matchups[currentMatch]?.p2].map((p, idx) => (
+            {[activeKing, activeChallenger].map((p, idx) => (
               <motion.div
                 key={idx}
                 onClick={() => makeSelection(p)}
@@ -1405,8 +1427,8 @@ function ThisOrThat() {
                 whileHover={{ scale: 1.02, background: "rgba(255, 255, 255, 0.08)", borderColor: "var(--accent)" }}
                 whileTap={{ scale: 0.98 }}
               >
-                <span style={{ fontSize: "2rem" }}>{p?.cover}</span>
-                <h4 style={{ margin: "0.25rem 0", fontSize: "1.1rem" }}>{p?.name}</h4>
+                <span style={{ fontSize: "2.5rem" }}>{p?.cover}</span>
+                <h4 style={{ margin: "0.25rem 0", fontSize: "1.15rem", fontWeight: 700 }}>{p?.name}</h4>
                 <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>{p?.role}</p>
               </motion.div>
             ))}
