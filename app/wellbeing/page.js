@@ -663,8 +663,6 @@ function FootballQuiz({ user }) {
   );
 }
 
-}
-
 // ============= FOOTBALL HIGHER OR LOWER =============
 const higherLowerQuestions = [
   {
