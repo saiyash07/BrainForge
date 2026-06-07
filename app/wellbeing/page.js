@@ -1439,6 +1439,588 @@ function ThisOrThat() {
   );
 }
 
+}
+
+// ============= TRANSFER CONNECT =============
+const transferPool = [
+  {
+    chain: "Ajax ➔ Juventus ➔ Inter Milan ➔ Barcelona ➔ AC Milan ➔ PSG",
+    clue: "Swedish superstar striker, famous for acrobatic goals.",
+    options: ["Henrik Larsson", "Zlatan Ibrahimovic", "Edinson Cavani", "Maxwell"],
+    correct: 1
+  },
+  {
+    chain: "Manchester United ➔ Real Madrid ➔ Juventus ➔ Manchester United ➔ Al-Nassr",
+    clue: "All-time UCL top scorer and legendary Portuguese winger/forward.",
+    options: ["Luis Figo", "Cristiano Ronaldo", "Nani", "Angel Di Maria"],
+    correct: 1
+  },
+  {
+    chain: "Barcelona ➔ PSG ➔ Inter Miami",
+    clue: "Argentine playmaker, widely regarded as the greatest of all time.",
+    options: ["Neymar Jr", "Lionel Messi", "Luis Suarez", "Ronaldinho"],
+    correct: 1
+  },
+  {
+    chain: "Santos ➔ Barcelona ➔ PSG ➔ Al-Hilal",
+    clue: "Brazilian samba star, famous for trickery and MSN partnership.",
+    options: ["Neymar Jr", "Ronaldinho", "Ronaldo Nazario", "Malcom"],
+    correct: 0
+  },
+  {
+    chain: "Ajax ➔ Barcelona ➔ Inter Milan ➔ Real Madrid ➔ AC Milan",
+    clue: "Legendary Brazilian forward, nicknamed 'El Fenomeno'. Scored in 2002 WC final.",
+    options: ["Ronaldinho", "Ronaldo Nazario", "Rivaldo", "Kaka"],
+    correct: 1
+  },
+  {
+    chain: "Benfica ➔ Real Madrid ➔ Manchester United ➔ PSG ➔ Juventus ➔ Benfica",
+    clue: "Argentine winger, famous for his chip shots and heart celebration.",
+    options: ["Angel Di Maria", "Gonzalo Higuain", "Alexis Sanchez", "James Rodriguez"],
+    correct: 0
+  },
+  {
+    chain: "Monaco ➔ PSG ➔ Real Madrid",
+    clue: "French superstar winger, won the World Cup in 2018 as a teenager.",
+    options: ["Karim Benzema", "Antoine Griezmann", "Kylian Mbappe", "Ousmane Dembele"],
+    correct: 2
+  },
+  {
+    chain: "Birmingham City ➔ Borussia Dortmund ➔ Real Madrid",
+    clue: "Young English midfield sensation, Ballon d'Or contender.",
+    options: ["Jude Bellingham", "Phil Foden", "Bukayo Saka", "Declan Rice"],
+    correct: 0
+  }
+];
+
+function TransferConnect({ user }) {
+  const [questions, setQuestions] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [bestScore, setBestScore] = useState(null);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      getGameScores(user.uid).then((scores) => {
+        if (scores["transfer-connect"] !== undefined) {
+          setBestScore(scores["transfer-connect"].highScore);
+        }
+      });
+    }
+  }, [user]);
+
+  const startQuiz = () => {
+    const shuffled = [...transferPool]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5);
+    setQuestions(shuffled);
+    setCurrentIdx(0);
+    setScore(0);
+    setIsPlaying(true);
+    setSelectedOpt(null);
+    setQuizFinished(false);
+  };
+
+  const handleOptionClick = (idx) => {
+    if (selectedOpt !== null) return;
+    setSelectedOpt(idx);
+    if (idx === questions[currentIdx].correct) {
+      setScore((s) => s + 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIdx < questions.length - 1) {
+      setCurrentIdx((idx) => idx + 1);
+      setSelectedOpt(null);
+    } else {
+      setIsPlaying(false);
+      setQuizFinished(true);
+      if (user) {
+        saveGameScore(user.uid, "transfer-connect", score);
+      }
+      if (bestScore === null || score > bestScore) {
+        setBestScore(score);
+      }
+    }
+  };
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>🔗 Transfer Connect</h3>
+        {bestScore !== null && <span style={gameStyles.bestScore}>Best: {bestScore}/5</span>}
+      </div>
+
+      {!isPlaying && !quizFinished ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Connect the transfer chain to the correct player! 5 rounds.</p>
+          <button onClick={startQuiz} className="btn btn-primary" id="transfer-start-btn">
+            Start Quiz
+          </button>
+        </div>
+      ) : quizFinished ? (
+        <div style={gameStyles.startScreen}>
+          <p style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>
+            {score} / 5 🎉
+          </p>
+          <button onClick={startQuiz} className="btn btn-primary btn-sm" id="transfer-retry-btn">
+            <HiRefresh size={14} /> Try Again
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={gameStyles.gameStats}>
+            <span>Round {currentIdx + 1} of 5</span>
+            <span>Score: {score}</span>
+          </div>
+
+          <div style={{ textAlign: "center", padding: "1rem 0", marginBottom: "1rem" }} className="glass-subtle">
+            <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--accent)", margin: "0 0 0.5rem" }}>
+              {questions[currentIdx]?.chain}
+            </p>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: 0 }}>
+              Hint: {questions[currentIdx]?.clue}
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }}>
+            {questions[currentIdx]?.options.map((opt, idx) => {
+              const isSelected = selectedOpt === idx;
+              const isCorrect = idx === questions[currentIdx].correct;
+              let btnStyle = {
+                padding: "0.75rem 1rem",
+                borderRadius: "12px",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "rgba(255, 255, 255, 0.05)",
+                color: "var(--text-primary)",
+                fontWeight: 600,
+                textAlign: "left",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              };
+
+              if (selectedOpt !== null) {
+                if (isCorrect) {
+                  btnStyle.background = "rgba(74, 222, 128, 0.2)";
+                  btnStyle.borderColor = "#4ade80";
+                } else if (isSelected) {
+                  btnStyle.background = "rgba(248, 113, 113, 0.2)";
+                  btnStyle.borderColor = "#f87171";
+                } else {
+                  btnStyle.opacity = 0.5;
+                }
+              }
+
+              return (
+                <motion.button
+                  key={idx}
+                  style={btnStyle}
+                  onClick={() => handleOptionClick(idx)}
+                  whileHover={selectedOpt === null ? { scale: 1.02, background: "rgba(255, 255, 255, 0.1)" } : {}}
+                  whileTap={selectedOpt === null ? { scale: 0.98 } : {}}
+                  disabled={selectedOpt !== null}
+                >
+                  {opt}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {selectedOpt !== null && (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={handleNext} className="btn btn-primary btn-sm" id="transfer-next-btn">
+                Next <HiChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============= PENALTY SHOOTOUT =============
+const shootoutTeams = [
+  { name: "FC Barcelona", emoji: "🔴🔵", color: "#8a1538" },
+  { name: "Real Madrid", emoji: "⚪👑", color: "#1a365d" },
+  { name: "Manchester City", emoji: "🩵⚽", color: "#63b3ed" },
+  { name: "Arsenal", emoji: "🔴⚪", color: "#e53e3e" },
+  { name: "Bayern Munich", emoji: "🔴🇩🇪", color: "#c53030" },
+  { name: "Paris Saint-Germain", emoji: "🔵🗼", color: "#2c3e50" }
+];
+
+function PenaltyShootout({ user }) {
+  const [myTeam, setMyTeam] = useState(null);
+  const [oppTeam, setOppTeam] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [round, setRound] = useState(0); // 0 to 4 (5 rounds)
+  const [myScore, setMyScore] = useState(0);
+  const [oppScore, setOppScore] = useState(0);
+  const [turn, setTurn] = useState("shoot"); // 'shoot' or 'save'
+  const [myAttempts, setMyAttempts] = useState([]);
+  const [oppAttempts, setOppAttempts] = useState([]);
+  
+  const [selectedCorner, setSelectedCorner] = useState(null);
+  const [powerPercent, setPowerPercent] = useState(0);
+  const [isPowerActive, setIsPowerActive] = useState(false);
+  
+  const [resultMsg, setResultMsg] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [bestStreak, setBestStreak] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      getGameScores(user.uid).then((scores) => {
+        if (scores["penalty-shootout"]) {
+          setBestStreak(scores["penalty-shootout"].highScore || 0);
+        }
+      });
+    }
+  }, [user]);
+
+  // Precision power slider effect
+  useEffect(() => {
+    let interval;
+    if (isPowerActive) {
+      let direction = 1;
+      interval = setInterval(() => {
+        setPowerPercent((p) => {
+          let next = p + direction * 8;
+          if (next >= 100) {
+            next = 100;
+            direction = -1;
+          } else if (next <= 0) {
+            next = 0;
+            direction = 1;
+          }
+          return next;
+        });
+      }, 30);
+    }
+    return () => clearInterval(interval);
+  }, [isPowerActive]);
+
+  const selectTeams = (team, role) => {
+    if (role === "mine") {
+      setMyTeam(team);
+      // Automatically choose different opponent
+      const remaining = shootoutTeams.filter(t => t.name !== team.name);
+      setOppTeam(remaining[Math.floor(Math.random() * remaining.length)]);
+    }
+  };
+
+  const startShootout = () => {
+    setRound(0);
+    setMyScore(0);
+    setOppScore(0);
+    setTurn("shoot");
+    setMyAttempts(new Array(5).fill(null));
+    setOppAttempts(new Array(5).fill(null));
+    setSelectedCorner(null);
+    setPowerPercent(0);
+    setIsPowerActive(false);
+    setGameOver(false);
+    setWinner(null);
+    setIsPlaying(true);
+    setShowResult(false);
+  };
+
+  const chooseCorner = (corner) => {
+    if (showResult) return;
+    setSelectedCorner(corner);
+    if (turn === "shoot") {
+      // Start the power slider
+      setPowerPercent(0);
+      setIsPowerActive(true);
+    } else {
+      // User is goalkeeper defending
+      handleDefend(corner);
+    }
+  };
+
+  const lockPower = () => {
+    if (!isPowerActive) return;
+    setIsPowerActive(false);
+    handleShoot();
+  };
+
+  const handleShoot = () => {
+    const aiKeeperDive = Math.floor(Math.random() * 4);
+    const hasPrecisePower = powerPercent >= 35 && powerPercent <= 85;
+    
+    let isGoal = false;
+    let msg = "";
+
+    if (!hasPrecisePower) {
+      msg = "Miss! Shot went wide of the goalpost! ❌";
+    } else if (aiKeeperDive === selectedCorner) {
+      msg = "Saved! The goalkeeper made a brilliant dive! 🧤";
+    } else {
+      isGoal = true;
+      msg = "Goal! Sent the keeper the wrong way! ⚽🔥";
+    }
+
+    const newAttempts = [...myAttempts];
+    newAttempts[round] = isGoal ? "goal" : "save";
+    setMyAttempts(newAttempts);
+
+    if (isGoal) {
+      setMyScore((s) => s + 1);
+    }
+
+    setResultMsg(msg);
+    setShowResult(true);
+  };
+
+  const handleDefend = (userDive) => {
+    const aiShotCorner = Math.floor(Math.random() * 4);
+    let isGoal = true;
+    let msg = "";
+
+    if (userDive === aiShotCorner) {
+      isGoal = false;
+      msg = "What a save! You guessed correctly and blocked it! 🧤🎉";
+    } else {
+      msg = "Goal! Opponent clinical finish into the net. ⚽";
+    }
+
+    const newAttempts = [...oppAttempts];
+    newAttempts[round] = isGoal ? "goal" : "save";
+    setOppAttempts(newAttempts);
+
+    if (isGoal) {
+      setOppScore((s) => s + 1);
+    }
+
+    setResultMsg(msg);
+    setShowResult(true);
+  };
+
+  const nextTurn = () => {
+    setShowResult(false);
+    setSelectedCorner(null);
+    setPowerPercent(0);
+
+    if (turn === "shoot") {
+      setTurn("save");
+    } else {
+      // Check if game is over after a full round
+      const isEnded = checkGameOverState();
+      if (!isEnded) {
+        setRound((r) => r + 1);
+        setTurn("shoot");
+        
+        // Handle sudden death expansion if we go beyond round 5
+        if (round >= 4) {
+          setMyAttempts((att) => [...att, null]);
+          setOppAttempts((att) => [...att, null]);
+        }
+      }
+    }
+  };
+
+  const checkGameOverState = () => {
+    const currentRound = round + 1;
+    const remainingRounds = Math.max(0, 5 - currentRound);
+    
+    // Check if one team has mathematically won already
+    if (myScore > oppScore + remainingRounds) {
+      endGame(myTeam);
+      return true;
+    }
+    if (oppScore > myScore + remainingRounds) {
+      endGame(oppTeam);
+      return true;
+    }
+
+    // Sudden death criteria
+    if (currentRound >= 5 && myScore === oppScore) {
+      return false; // Continue sudden death
+    } else if (currentRound >= 5 && myScore !== oppScore) {
+      const winnerTeam = myScore > oppScore ? myTeam : oppTeam;
+      endGame(winnerTeam);
+      return true;
+    }
+
+    return false;
+  };
+
+  const endGame = (winningTeam) => {
+    setGameOver(true);
+    setIsPlaying(false);
+    setWinner(winningTeam);
+    
+    if (winningTeam.name === myTeam.name) {
+      const newStreak = bestStreak + 1;
+      setBestStreak(newStreak);
+      if (user) {
+        saveGameScore(user.uid, "penalty-shootout", newStreak);
+      }
+    } else {
+      setBestStreak(0);
+      if (user) {
+        saveGameScore(user.uid, "penalty-shootout", 0);
+      }
+    }
+  };
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>🥅 Penalty Shootout</h3>
+        <span style={gameStyles.bestScore}>Win Streak: {bestStreak}</span>
+      </div>
+
+      {!isPlaying && !gameOver ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Select your team to begin a penalty shootout!</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", width: "100%", marginBottom: "1rem" }}>
+            {shootoutTeams.map((team, idx) => (
+              <button
+                key={idx}
+                onClick={() => selectTeams(team, "mine")}
+                className="btn btn-glass btn-sm"
+                style={{
+                  border: myTeam?.name === team.name ? `1px solid ${team.color}` : "1px solid rgba(255,255,255,0.1)",
+                  background: myTeam?.name === team.name ? `${team.color}22` : "rgba(255,255,255,0.05)"
+                }}
+              >
+                {team.emoji} {team.name}
+              </button>
+            ))}
+          </div>
+          {myTeam && (
+            <button onClick={startShootout} className="btn btn-primary" id="shootout-start-btn">
+              Vs {oppTeam?.name} ⚽
+            </button>
+          )}
+        </div>
+      ) : gameOver ? (
+        <div style={gameStyles.startScreen}>
+          <p style={{ fontSize: "2rem" }}>🏆</p>
+          <h4 style={{ fontSize: "1.25rem", fontWeight: 700, margin: "0.25rem 0", color: winner?.color }}>
+            {winner?.name} Wins!
+          </h4>
+          <p style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0.5rem 0" }}>
+            {myScore} - {oppScore}
+          </p>
+          <p style={gameStyles.startText}>
+            {winner?.name === myTeam?.name ? "Congratulations, victory is yours! 🎉" : "Defeat! Better luck next time."}
+          </p>
+          <button onClick={startShootout} className="btn btn-primary btn-sm" id="shootout-retry-btn">
+            Play Again
+          </button>
+        </div>
+      ) : (
+        <div>
+          {/* Match Info & Scoreboard */}
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.75rem", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "0.5rem" }}>
+            <span style={{ color: myTeam?.color }}>{myTeam?.emoji} {myScore}</span>
+            <span>Round {round + 1} ({turn === "shoot" ? "Your Kick" : "Your Save"})</span>
+            <span style={{ color: oppTeam?.color }}>{oppScore} {oppTeam?.emoji}</span>
+          </div>
+
+          {/* Score Dots */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {myAttempts.map((att, idx) => (
+                <span key={idx} style={{ fontSize: "0.9rem" }}>
+                  {att === "goal" ? "🟢" : att === "save" ? "🔴" : "⚪"}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {oppAttempts.map((att, idx) => (
+                <span key={idx} style={{ fontSize: "0.9rem" }}>
+                  {att === "goal" ? "🟢" : att === "save" ? "🔴" : "⚪"}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Goal Post Interactive GUI */}
+          <div style={{
+            position: "relative",
+            width: "100%",
+            height: "120px",
+            border: "4px solid #fff",
+            borderBottom: "none",
+            borderRadius: "8px 8px 0 0",
+            background: "linear-gradient(to top, rgba(74,222,128,0.1), rgba(255,255,255,0.01))",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gridTemplateRows: "1fr 1fr",
+            gap: "2px",
+            overflow: "hidden"
+          }}>
+            {[0, 1, 2, 3].map((corner) => {
+              const label = corner === 0 ? "Top Left" : corner === 1 ? "Top Right" : corner === 2 ? "Bottom Left" : "Bottom Right";
+              const isSelected = selectedCorner === corner;
+              return (
+                <button
+                  key={corner}
+                  onClick={() => chooseCorner(corner)}
+                  disabled={selectedCorner !== null}
+                  style={{
+                    border: "1px dashed rgba(255,255,255,0.15)",
+                    background: isSelected ? "rgba(108,99,255,0.25)" : "transparent",
+                    color: isSelected ? "var(--accent)" : "rgba(255,255,255,0.3)",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    cursor: selectedCorner !== null ? "default" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Power Precision Slider (Active on Shoot) */}
+          {turn === "shoot" && selectedCorner !== null && (
+            <div style={{ marginTop: "1rem" }}>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.25rem", textAlign: "center" }}>
+                Precision: Lock the bar in the Green Zone (35% - 85%)!
+              </p>
+              <div style={{ position: "relative", width: "100%", height: "20px", background: "rgba(255,255,255,0.08)", borderRadius: "10px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                {/* Green Zone indicator */}
+                <div style={{ position: "absolute", left: "35%", width: "50%", height: "100%", background: "rgba(74,222,128,0.25)", borderLeft: "1px solid #4ade80", borderRight: "1px solid #4ade80" }} />
+                {/* Slider knob */}
+                <div style={{ position: "absolute", left: `${powerPercent}%`, width: "4px", height: "100%", background: "#fff", boxShadow: "0 0 8px #fff" }} />
+              </div>
+              {isPowerActive && (
+                <button onClick={lockPower} className="btn btn-primary btn-sm" style={{ width: "100%", marginTop: "0.75rem" }} id="shootout-lock-btn">
+                  Shoot! ⚽
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Result Messages */}
+          {showResult && (
+            <div style={{ textAlign: "center", marginTop: "1rem" }}>
+              <p style={{ fontWeight: 800, fontSize: "1.1rem", margin: "0.5rem 0" }}>{resultMsg}</p>
+              <button onClick={nextTurn} className="btn btn-primary btn-sm" id="shootout-next-btn">
+                Continue
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============= BREATHING EXERCISE =============
 function BreathingExercise() {
   const [phase, setPhase] = useState("idle"); // idle, inhale, hold, exhale
@@ -1978,6 +2560,12 @@ export default function WellbeingPage() {
             </div>
             <div className="glass-card" style={styles.gameCard}>
               <ThisOrThat />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <TransferConnect user={user} />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <PenaltyShootout user={user} />
             </div>
           </motion.div>
         )}
