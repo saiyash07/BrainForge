@@ -2384,9 +2384,7 @@ export default function WellbeingPage() {
                   <div
                     key={track.id}
                     onClick={() => {
-                      setPlayQueue(genre.tracks);
-                      setQueueIndex(i);
-                      playTrack(track);
+                      playTrack(track, genre.tracks, i);
                     }}
                     style={{
                       ...styles.playlistRow,
@@ -2408,15 +2406,9 @@ export default function WellbeingPage() {
                       <button
                         onClick={() => {
                           if (isCurrent) {
-                            setIsPlaying(!isPlaying);
-                            if (playerRef.current && typeof playerRef.current.pauseVideo === "function") {
-                              if (isPlaying) playerRef.current.pauseVideo();
-                              else playerRef.current.playVideo();
-                            }
+                            togglePlay();
                           } else {
-                            setPlayQueue(genre.tracks);
-                            setQueueIndex(i);
-                            playTrack(track);
+                            playTrack(track, genre.tracks, i);
                           }
                         }}
                         style={styles.playIconButton}
