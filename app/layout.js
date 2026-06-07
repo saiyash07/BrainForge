@@ -2,6 +2,8 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import ParticlesBG from "@/components/ParticlesBG";
 import { SubjectsProvider } from "@/components/SubjectsProvider";
+import { MusicProvider } from "@/lib/music-context";
+import FloatingMusicPlayer from "@/components/FloatingMusicPlayer";
 
 export const metadata = {
   title: "BrainForge — Forge Your Future, One Concept at a Time",
@@ -20,9 +22,12 @@ export default function RootLayout({ children }) {
       <body>
         <AuthProvider>
           <SubjectsProvider>
-            <div className="app-background" />
-            <ParticlesBG />
-            {children}
+            <MusicProvider>
+              <div className="app-background" />
+              <ParticlesBG />
+              {children}
+              <FloatingMusicPlayer />
+            </MusicProvider>
           </SubjectsProvider>
         </AuthProvider>
       </body>

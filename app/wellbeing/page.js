@@ -8,74 +8,7 @@ import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiMusicNote, HiPuzzle, HiHeart, HiRefresh, HiPlay, HiPause, HiVolumeUp, HiVolumeOff, HiSwitchHorizontal, HiChevronLeft, HiChevronRight } from "react-icons/hi";
 
-// ============= MUSIC DATA =============
-const musicGenres = {
-  sad: {
-    emoji: "😢",
-    label: "Sad / Emotional",
-    color: "#a78bfa",
-    tracks: [
-      { id: "sad-1", title: "Daylight", artist: "David Kushner", videoId: "73E0BnFs7S4", cover: "🌅" },
-      { id: "sad-2", title: "Love Me Not", artist: "Ravyn Lenae & Rex Orange County", videoId: "ES5nF0bvCtc", cover: "🥀" },
-      { id: "sad-2-solo", title: "Love Me Not (Solo Version)", artist: "Ravyn Lenae", videoId: "cswfR85D7jM", cover: "🥀" },
-      { id: "sad-3", title: "Mary on a Cross", artist: "Ghost", videoId: "1K36RVwEG-k", cover: "✝️" },
-      { id: "sad-4", title: "Prom Queen", artist: "Beach Bunny", videoId: "FOXIF36YPTM", cover: "👑" },
-      { id: "sad-5", title: "Little Dark Age", artist: "MGMT", videoId: "BoatSoGva_I", cover: "🕰️" },
-      { id: "sad-6", title: "Let Down", artist: "Radiohead", videoId: "Ge4EUrjZ3DE", cover: "🎈" },
-      { id: "sad-7", title: "Love Story", artist: "Indila", videoId: "DF3XjEhJ40Y", cover: "📖" },
-      { id: "sad-8", title: "Spirits", artist: "The Strumbellas", videoId: "TqEeA9Zd3J8", cover: "👻" },
-      { id: "sad-9", title: "Play Date", artist: "Melanie Martinez", videoId: "rODr5Zfj8RA", cover: "🧸" },
-      { id: "sad-10", title: "Heat Waves", artist: "Glass Animals", videoId: "mRD0-GxqHVo", cover: "☀️" },
-      { id: "sad-11", title: "Somewhere Only We Know", artist: "Keane", videoId: "-HwPKDlb3e8", cover: "🌲" },
-      { id: "sad-12", title: "Bitter Sweet Symphony", artist: "The Verve", videoId: "tvx_W4UFVDc", cover: "🎻" },
-      { id: "sad-13", title: "Somebody That I Used to Know", artist: "Gotye", videoId: "t_dLoOXy8PA", cover: "👥" },
-      { id: "sad-14", title: "The Night We Met", artist: "Lord Huron", videoId: "wGF7PswOENQ", cover: "🌌" }
-    ]
-  },
-  rock: {
-    emoji: "🎸",
-    label: "Rock",
-    color: "#f87171",
-    tracks: [
-      { id: "rock-1", title: "Hotel California", artist: "Eagles", videoId: "09839DpTctU", cover: "🏨" },
-      { id: "rock-2", title: "I Was Made for Lovin' You", artist: "Kiss", videoId: "ZhIsAZO5gl0", cover: "💖" },
-      { id: "rock-3", title: "Every Breath You Take", artist: "The Police", videoId: "LPr3N4AMXNQ", cover: "💨" },
-      { id: "rock-4", title: "Paranoid", artist: "Black Sabbath", videoId: "PDuH4iAYyNo", cover: "👁️" },
-      { id: "rock-5", title: "War Pigs", artist: "Black Sabbath", videoId: "rG0Ws3YfONY", cover: "🐗" },
-      { id: "rock-6", title: "Stairway to Heaven", artist: "Led Zeppelin", videoId: "x8z6iqeiOIU", cover: "🪜" },
-      { id: "rock-7", title: "Wonderwall", artist: "Oasis", videoId: "NbSzTi0d6pQ", cover: "🧱" },
-      { id: "rock-8", title: "Don't Look Back in Anger", artist: "Oasis", videoId: "r8OipmKFDeM", cover: "🔥" }
-    ]
-  },
-  chill: {
-    emoji: "🌊",
-    label: "Chill",
-    color: "#60a5fa",
-    tracks: [
-      { id: "chill-1", title: "Raindance", artist: "Dave", videoId: "SOJpE1KMUbo", cover: "🌧️" },
-      { id: "chill-2", title: "Viva La Vida", artist: "Coldplay", videoId: "0bZbwkJ3A90", cover: "👑" },
-      { id: "chill-3", title: "Be Like a Woman", artist: "Chris Rainbow", videoId: "5bcgc8pVQT8", cover: "👩" },
-      { id: "chill-4", title: "Moulaga", artist: "Heuss L'enfoiré", videoId: "5OAysfkcMjg", cover: "🍋" },
-      { id: "chill-5", title: "Beautiful Boy", artist: "John Lennon", videoId: "39_WPGr5u34", cover: "👦" },
-      { id: "chill-6", title: "Imagine", artist: "John Lennon", videoId: "YkgkThdzX-8", cover: "🕊️" }
-    ]
-  },
-  hiphop: {
-    emoji: "🎤",
-    label: "Hip Hop",
-    color: "#fbbf24",
-    tracks: [
-      { id: "hiphop-1", title: "Make Them Cry", artist: "Drake", videoId: "ZlDt6h5SMPU", cover: "❄️" },
-      { id: "hiphop-2", title: "Dust", artist: "Drake", videoId: "p_-NmqmK8CU", cover: "🌪️" },
-      { id: "hiphop-3", title: "Whisper My Name", artist: "Drake", videoId: "MoWIDYuGDNA", cover: "🤫" },
-      { id: "hiphop-4", title: "Janice STFU", artist: "Drake", videoId: "lidVunzH_1Y", cover: "🤐" },
-      { id: "hiphop-5", title: "Ran To Atlanta", artist: "Drake & Future", videoId: "ipOSrQNrp1U", cover: "✈️" },
-      { id: "hiphop-6", title: "Shabang", artist: "Drake", videoId: "eBKyvfgt1Es", cover: "💥" },
-      { id: "hiphop-7", title: "Make Them Pay", artist: "Drake", videoId: "XSiEA19SeNE", cover: "💰" },
-      { id: "hiphop-8", title: "What You Saying", artist: "Lil Uzi Vert", videoId: "jSpazjVFm6k", cover: "🗣️" }
-    ]
-  }
-};
+import { useMusic, musicGenres } from "@/lib/music-context";
 
 // ============= MEMORY GAME =============
 const memoryIcons = ["🧠", "⚛️", "📊", "💡", "🎯", "🔥", "💎", "🚀"];
@@ -2319,283 +2252,48 @@ function BreathingExercise() {
 export default function WellbeingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeGenre, setActiveGenre] = useState("chill");
   const [activeSection, setActiveSection] = useState("music");
 
-  // Custom audio player state
-  const [currentTrack, setCurrentTrack] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.8);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
-  const [playQueue, setPlayQueue] = useState([]);
-  const [queueIndex, setQueueIndex] = useState(0);
-
-  const playerRef = useRef(null);
-  const currentTrackRef = useRef(currentTrack);
-  const isPlayerReadyRef = useRef(false);
-
-  useEffect(() => {
-    currentTrackRef.current = currentTrack;
-  }, [currentTrack]);
-
-  // Refs to avoid stale closures in YouTube callback events
-  const playQueueRef = useRef(playQueue);
-  const queueIndexRef = useRef(queueIndex);
-  const isShuffleRef = useRef(isShuffle);
-  const isRepeatRef = useRef(isRepeat);
-
-  useEffect(() => {
-    playQueueRef.current = playQueue;
-  }, [playQueue]);
-
-  useEffect(() => {
-    queueIndexRef.current = queueIndex;
-  }, [queueIndex]);
-
-  useEffect(() => {
-    isShuffleRef.current = isShuffle;
-  }, [isShuffle]);
-
-  useEffect(() => {
-    isRepeatRef.current = isRepeat;
-  }, [isRepeat]);
+  const {
+    isPlaying,
+    currentTrack,
+    activeGenre,
+    setActiveGenre,
+    playQueue,
+    queueIndex,
+    currentTime,
+    duration,
+    volume,
+    isMuted,
+    playTrack,
+    togglePlay,
+    playNext,
+    playPrev,
+    seekTo,
+    setVolume,
+    setIsMuted,
+    setIsRepeat,
+    setIsShuffle,
+    isRepeat,
+    isShuffle
+  } = useMusic();
 
   useEffect(() => {
     if (!loading && !user) router.push("/");
   }, [user, loading, router]);
 
-  // Sync musicGenres tracks to queue on load
-  useEffect(() => {
-    if (musicGenres[activeGenre]) {
-      setPlayQueue(musicGenres[activeGenre].tracks);
-    }
-  }, [activeGenre]);
-
-  // Initialize YouTube Iframe Player
-  useEffect(() => {
-    if (loading || !user) return;
-
-    const checkAndInit = () => {
-      if (window.YT && window.YT.Player) {
-        initPlayer();
-        return true;
-      }
-      return false;
-    };
-
-    if (checkAndInit()) return;
-
-    // Set callback in case it hasn't loaded yet
-    const previousCallback = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      if (previousCallback) previousCallback();
-      initPlayer();
-    };
-
-    if (!document.getElementById("youtube-iframe-api")) {
-      const tag = document.createElement("script");
-      tag.id = "youtube-iframe-api";
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    } else {
-      // Script is already loaded but Player is not ready. Poll until ready.
-      const interval = setInterval(() => {
-        if (checkAndInit()) {
-          clearInterval(interval);
-        }
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [loading, user]);
-
-  const initPlayer = () => {
-    try {
-      if (playerRef.current) return; // Prevent double initialization
-      playerRef.current = new window.YT.Player("hidden-yt-player", {
-        height: "200",
-        width: "200",
-        videoId: "",
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          rel: 0,
-          showinfo: 0,
-          iv_load_policy: 3,
-        },
-        events: {
-          onReady: (event) => {
-            isPlayerReadyRef.current = true;
-            event.target.setVolume(volume * 100);
-            if (isMuted) {
-              event.target.mute();
-            } else {
-              event.target.unMute();
-            }
-            // If the user already clicked a track before onReady, play it now
-            if (currentTrackRef.current) {
-              event.target.loadVideoById(currentTrackRef.current.videoId);
-            }
-          },
-          onStateChange: (event) => {
-            // 0 = ended, 1 = playing, 2 = paused
-            if (event.data === window.YT.PlayerState.ENDED) {
-              handleTrackEnded();
-            } else if (event.data === window.YT.PlayerState.PLAYING) {
-              setIsPlaying(true);
-              setDuration(event.target.getDuration());
-            } else if (event.data === window.YT.PlayerState.PAUSED) {
-              setIsPlaying(false);
-            }
-          },
-        },
-      });
-    } catch (e) {
-      console.error("Failed to init YouTube player:", e);
-    }
-  };
-
-  // Poll player current time when playing
-  useEffect(() => {
-    let interval;
-    if (isPlaying && playerRef.current && typeof playerRef.current.getCurrentTime === "function") {
-      interval = setInterval(() => {
-        try {
-          const time = playerRef.current.getCurrentTime();
-          const dur = playerRef.current.getDuration();
-          if (typeof time === "number" && !isNaN(time)) {
-            setCurrentTime(time);
-          }
-          if (typeof dur === "number" && !isNaN(dur)) {
-            setDuration(dur);
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }, 500);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
-
-  const playTrack = (track) => {
-    setCurrentTrack(track);
-    setIsPlaying(true);
-    if (playerRef.current && typeof playerRef.current.loadVideoById === "function" && isPlayerReadyRef.current) {
-      playerRef.current.loadVideoById(track.videoId);
-    }
-  };
-
-  const togglePlay = () => {
-    if (!currentTrack && playQueue.length > 0) {
-      playTrack(playQueue[0]);
-    } else if (playerRef.current && typeof playerRef.current.playVideo === "function") {
-      if (isPlaying) {
-        playerRef.current.pauseVideo();
-        setIsPlaying(false);
-      } else {
-        playerRef.current.playVideo();
-        setIsPlaying(true);
-      }
-    }
-  };
-
-  const playNext = useCallback(() => {
-    if (playQueue.length === 0) return;
-    let nextIdx = queueIndex + 1;
-    if (isShuffle) {
-      nextIdx = Math.floor(Math.random() * playQueue.length);
-    } else if (nextIdx >= playQueue.length) {
-      if (isRepeat) {
-        nextIdx = 0;
-      } else {
-        setIsPlaying(false);
-        if (playerRef.current && typeof playerRef.current.stopVideo === "function") {
-          playerRef.current.stopVideo();
-        }
-        return;
-      }
-    }
-    setQueueIndex(nextIdx);
-    playTrack(playQueue[nextIdx]);
-  }, [playQueue, queueIndex, isShuffle, isRepeat]);
-
-  const playPrev = useCallback(() => {
-    if (playQueue.length === 0) return;
-    let prevIdx = queueIndex - 1;
-    if (prevIdx < 0) {
-      prevIdx = playQueue.length - 1;
-    }
-    setQueueIndex(prevIdx);
-    playTrack(playQueue[prevIdx]);
-  }, [playQueue, queueIndex]);
-
-  const handleTrackEnded = () => {
-    const queue = playQueueRef.current;
-    const index = queueIndexRef.current;
-    const shuffle = isShuffleRef.current;
-    const repeat = isRepeatRef.current;
-
-    if (repeat) {
-      if (playerRef.current && typeof playerRef.current.seekTo === "function") {
-        playerRef.current.seekTo(0, true);
-        playerRef.current.playVideo();
-      }
-    } else {
-      if (queue.length === 0) return;
-      let nextIdx = index + 1;
-      if (shuffle) {
-        nextIdx = Math.floor(Math.random() * queue.length);
-      } else if (nextIdx >= queue.length) {
-        setIsPlaying(false);
-        if (playerRef.current && typeof playerRef.current.stopVideo === "function") {
-          playerRef.current.stopVideo();
-        }
-        return;
-      }
-      setQueueIndex(nextIdx);
-      setCurrentTrack(queue[nextIdx]);
-      setIsPlaying(true);
-      if (playerRef.current && typeof playerRef.current.loadVideoById === "function") {
-        playerRef.current.loadVideoById(queue[nextIdx].videoId);
-      }
-    }
-  };
-
   const handleSeek = (e) => {
     const val = parseFloat(e.target.value) || 0;
-    if (playerRef.current && typeof playerRef.current.seekTo === "function") {
-      playerRef.current.seekTo(val, true);
-    }
-    setCurrentTime(val);
+    seekTo(val);
   };
 
   const handleVolumeChange = (e) => {
     const val = parseFloat(e.target.value) || 0;
-    if (playerRef.current && typeof playerRef.current.setVolume === "function") {
-      playerRef.current.setVolume(val * 100);
-      playerRef.current.unMute();
-    }
     setVolume(val);
-    setIsMuted(val === 0);
   };
 
   const toggleMute = () => {
-    if (playerRef.current && typeof playerRef.current.mute === "function") {
-      const nextMute = !isMuted;
-      if (nextMute) {
-        playerRef.current.mute();
-      } else {
-        playerRef.current.unMute();
-        playerRef.current.setVolume(volume * 100);
-      }
-      setIsMuted(nextMute);
-    }
+    setIsMuted(!isMuted);
   };
 
   const formatTime = (time) => {
