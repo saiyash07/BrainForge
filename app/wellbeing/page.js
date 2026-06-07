@@ -352,6 +352,208 @@ function TypingGame({ user }) {
   );
 }
 
+// ============= FOOTBALL QUIZ GAME =============
+const quizPool = [
+  {
+    question: "Which country has won the most FIFA World Cups?",
+    options: ["Germany", "Italy", "Argentina", "Brazil"],
+    correct: 3
+  },
+  {
+    question: "Who is the all-time top scorer in UEFA Champions League history?",
+    options: ["Lionel Messi", "Cristiano Ronaldo", "Robert Lewandowski", "Karim Benzema"],
+    correct: 1
+  },
+  {
+    question: "Which club has won the most UEFA Champions League titles?",
+    options: ["AC Milan", "FC Barcelona", "Real Madrid", "Bayern Munich"],
+    correct: 2
+  },
+  {
+    question: "Who won the Ballon d'Or in 2023?",
+    options: ["Erling Haaland", "Kylian Mbappé", "Lionel Messi", "Karim Benzema"],
+    correct: 2
+  },
+  {
+    question: "Which Premier League club is known as the Gunners?",
+    options: ["Chelsea", "Arsenal", "Tottenham Hotspur", "Manchester United"],
+    correct: 1
+  },
+  {
+    question: "Which player has the most assists in football history?",
+    options: ["Kevin De Bruyne", "Neymar Jr", "Lionel Messi", "Cristiano Ronaldo"],
+    correct: 2
+  },
+  {
+    question: "Who won the English Premier League in 2015-16 in a historic upset?",
+    options: ["Leicester City", "Tottenham Hotspur", "Liverpool", "Manchester City"],
+    correct: 0
+  },
+  {
+    question: "Which country won the FIFA World Cup in 2022?",
+    options: ["France", "Croatia", "Argentina", "Morocco"],
+    correct: 2
+  },
+  {
+    question: "Who scored the famous 'Hand of God' goal in 1986?",
+    options: ["Pele", "Diego Maradona", "Johan Cruyff", "Michel Platini"],
+    correct: 1
+  },
+  {
+    question: "Which country is host to the famous stadium 'Camp Nou'?",
+    options: ["Italy", "Spain", "England", "Portugal"],
+    correct: 1
+  }
+];
+
+function FootballQuiz({ user }) {
+  const [questions, setQuestions] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [bestScore, setBestScore] = useState(null);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      getGameScores(user.uid).then((scores) => {
+        if (scores["football-quiz"] !== undefined) {
+          setBestScore(scores["football-quiz"].highScore);
+        }
+      });
+    }
+  }, [user]);
+
+  const startQuiz = () => {
+    const shuffled = [...quizPool]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5);
+    setQuestions(shuffled);
+    setCurrentIdx(0);
+    setScore(0);
+    setIsPlaying(true);
+    setSelectedOpt(null);
+    setQuizFinished(false);
+  };
+
+  const handleOptionClick = (idx) => {
+    if (selectedOpt !== null) return;
+    setSelectedOpt(idx);
+    if (idx === questions[currentIdx].correct) {
+      setScore((s) => s + 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIdx < questions.length - 1) {
+      setCurrentIdx((idx) => idx + 1);
+      setSelectedOpt(null);
+    } else {
+      setIsPlaying(false);
+      setQuizFinished(true);
+      if (user) {
+        saveGameScore(user.uid, "football-quiz", score);
+      }
+      if (bestScore === null || score > bestScore) {
+        setBestScore(score);
+      }
+    }
+  };
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>⚽ Football Quiz</h3>
+        {bestScore !== null && <span style={gameStyles.bestScore}>Best: {bestScore}/5</span>}
+      </div>
+
+      {!isPlaying && !quizFinished ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Test your football knowledge! 5 random questions.</p>
+          <button onClick={startQuiz} className="btn btn-primary" id="quiz-start-btn">
+            Start Quiz
+          </button>
+        </div>
+      ) : quizFinished ? (
+        <div style={gameStyles.startScreen}>
+          <p style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>
+            {score} / 5 🎉
+          </p>
+          <p style={gameStyles.startText}>
+            {score === 5 ? "Flawless victory! 🏆" : score >= 3 ? "Great job! ⚽" : "Keep practicing!"}
+          </p>
+          <button onClick={startQuiz} className="btn btn-primary btn-sm" id="quiz-retry-btn">
+            <HiRefresh size={14} /> Try Again
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={gameStyles.gameStats}>
+            <span>Question {currentIdx + 1} of 5</span>
+            <span>Score: {score}</span>
+          </div>
+
+          <p style={{ fontSize: "1.1rem", fontWeight: 600, marginBottom: "1.25rem", textAlign: "center", color: "var(--text-primary)" }}>
+            {questions[currentIdx]?.question}
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }}>
+            {questions[currentIdx]?.options.map((opt, idx) => {
+              const isSelected = selectedOpt === idx;
+              const isCorrect = idx === questions[currentIdx].correct;
+              let btnStyle = {
+                padding: "0.75rem 1rem",
+                borderRadius: "12px",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "rgba(255, 255, 255, 0.05)",
+                color: "var(--text-primary)",
+                fontWeight: 600,
+                textAlign: "left",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              };
+
+              if (selectedOpt !== null) {
+                if (isCorrect) {
+                  btnStyle.background = "rgba(74, 222, 128, 0.2)";
+                  btnStyle.borderColor = "#4ade80";
+                } else if (isSelected) {
+                  btnStyle.background = "rgba(248, 113, 113, 0.2)";
+                  btnStyle.borderColor = "#f87171";
+                } else {
+                  btnStyle.opacity = 0.5;
+                }
+              }
+
+              return (
+                <motion.button
+                  key={idx}
+                  style={btnStyle}
+                  onClick={() => handleOptionClick(idx)}
+                  whileHover={selectedOpt === null ? { scale: 1.02, background: "rgba(255, 255, 255, 0.1)" } : {}}
+                  whileTap={selectedOpt === null ? { scale: 0.98 } : {}}
+                  disabled={selectedOpt !== null}
+                >
+                  {opt}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {selectedOpt !== null && (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={handleNext} className="btn btn-primary btn-sm" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} id="quiz-next-btn">
+                {currentIdx < 4 ? "Next Question" : "See Results"} <HiChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============= BREATHING EXERCISE =============
 function BreathingExercise() {
   const [phase, setPhase] = useState("idle"); // idle, inhale, hold, exhale
@@ -876,6 +1078,9 @@ export default function WellbeingPage() {
             </div>
             <div className="glass-card" style={styles.gameCard}>
               <TypingGame user={user} />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <FootballQuiz user={user} />
             </div>
           </motion.div>
         )}
