@@ -2071,9 +2071,24 @@ function PenaltyShootout({ user }) {
               ? (winner?.name === myTeam?.name ? "Congratulations, victory is yours! 🎉" : "Defeat! Better luck next time.")
               : `Victory for ${winner?.name}! 🥳`}
           </p>
-          <button onClick={startShootout} className="btn btn-primary btn-sm" id="shootout-retry-btn">
-            Play Again
-          </button>
+          <div style={{ display: "flex", gap: "0.5rem", width: "100%", marginTop: "1rem" }}>
+            <button onClick={startShootout} className="btn btn-primary btn-sm" style={{ flex: 1 }} id="shootout-retry-btn">
+              Rematch ⚽
+            </button>
+            <button
+              onClick={() => {
+                setGameOver(false);
+                setIsPlaying(false);
+                setMyTeam(null);
+                setOppTeam(null);
+              }}
+              className="btn btn-glass btn-sm"
+              style={{ flex: 1 }}
+              id="shootout-change-btn"
+            >
+              Change Teams/Mode 🔄
+            </button>
+          </div>
         </div>
       ) : (
         <div>
