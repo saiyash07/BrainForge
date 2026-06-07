@@ -663,6 +663,572 @@ function FootballQuiz({ user }) {
   );
 }
 
+}
+
+// ============= FOOTBALL HIGHER OR LOWER =============
+const higherLowerQuestions = [
+  {
+    prop: "Career Goals",
+    p1: { name: "Lionel Messi", val: 838 },
+    p2: { name: "Cristiano Ronaldo", val: 893 }
+  },
+  {
+    prop: "World Cup Goals",
+    p1: { name: "Miroslav Klose", val: 16 },
+    p2: { name: "Pele", val: 12 }
+  },
+  {
+    prop: "Champions League Titles",
+    p1: { name: "FC Barcelona", val: 5 },
+    p2: { name: "Real Madrid", val: 15 }
+  },
+  {
+    prop: "Premier League Goals in a Season",
+    p1: { name: "Mohamed Salah", val: 32 },
+    p2: { name: "Erling Haaland", val: 36 }
+  },
+  {
+    prop: "Ballon d'Ors Won",
+    p1: { name: "Cristiano Ronaldo", val: 5 },
+    p2: { name: "Lionel Messi", val: 8 }
+  },
+  {
+    prop: "Career Assists",
+    p1: { name: "Cristiano Ronaldo", val: 268 },
+    p2: { name: "Lionel Messi", val: 372 }
+  },
+  {
+    prop: "La Liga Titles Won",
+    p1: { name: "FC Barcelona", val: 27 },
+    p2: { name: "Real Madrid", val: 36 }
+  },
+  {
+    prop: "Champions League Goals",
+    p1: { name: "Lionel Messi", val: 129 },
+    p2: { name: "Cristiano Ronaldo", val: 140 }
+  }
+];
+
+function FootballHigherLower({ user }) {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null); // 'higher' or 'lower'
+  const [correct, setCorrect] = useState(null);
+  const [questions, setQuestions] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      getGameScores(user.uid).then((scores) => {
+        if (scores["higher-lower"]) {
+          setHighScore(scores["higher-lower"].highScore || 0);
+        }
+      });
+    }
+  }, [user]);
+
+  const startGame = () => {
+    const shuffled = [...higherLowerQuestions].sort(() => Math.random() - 0.5);
+    setQuestions(shuffled);
+    setCurrentIdx(0);
+    setScore(0);
+    setIsPlaying(true);
+    setSelectedAnswer(null);
+    setCorrect(null);
+  };
+
+  const handleGuess = (guess) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(guess);
+    const q = questions[currentIdx];
+    const isHigher = q.p2.val >= q.p1.val;
+    const isCorrect = (guess === "higher" && isHigher) || (guess === "lower" && !isHigher);
+
+    setCorrect(isCorrect);
+    if (isCorrect) {
+      setScore((s) => s + 1);
+    }
+  };
+
+  const nextQuestion = () => {
+    if (correct && currentIdx < questions.length - 1) {
+      setCurrentIdx((c) => c + 1);
+      setSelectedAnswer(null);
+      setCorrect(null);
+    } else {
+      setIsPlaying(false);
+      if (user) {
+        saveGameScore(user.uid, "higher-lower", score);
+      }
+      if (score > highScore) {
+        setHighScore(score);
+      }
+    }
+  };
+
+  const q = questions[currentIdx];
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>⚖️ Higher or Lower</h3>
+        <span style={gameStyles.bestScore}>Best Streak: {highScore}</span>
+      </div>
+
+      {!isPlaying ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Guess if the second entity's statistic is Higher or Lower!</p>
+          {correct === false && (
+            <p style={{ color: "var(--error)", fontWeight: 700, marginBottom: "0.5rem" }}>
+              Game Over! Final Streak: {score}
+            </p>
+          )}
+          <button onClick={startGame} className="btn btn-primary" id="hl-start-btn">
+            {correct === false ? "Try Again" : "Start Game"}
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={gameStyles.gameStats}>
+            <span>Streak: {score}</span>
+            <span>{q?.prop}</span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", textAlign: "center", margin: "1rem 0" }}>
+            <div className="glass-subtle" style={{ padding: "1rem", borderRadius: "12px" }}>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", margin: 0 }}>Reference Entity</p>
+              <h4 style={{ margin: "0.25rem 0", fontSize: "1.2rem" }}>{q?.p1.name}</h4>
+              <p style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent)", margin: 0 }}>
+                {q?.p1.val}
+              </p>
+            </div>
+
+            <p style={{ margin: 0, fontWeight: 700, fontSize: "1.1rem" }}>VS</p>
+
+            <div className="glass-subtle" style={{ padding: "1rem", borderRadius: "12px" }}>
+              <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", margin: 0 }}>Target Entity</p>
+              <h4 style={{ margin: "0.25rem 0", fontSize: "1.2rem" }}>{q?.p2.name}</h4>
+              <p style={{ fontSize: "1.5rem", fontWeight: 800, margin: 0 }}>
+                {selectedAnswer !== null ? q?.p2.val : "?"}
+              </p>
+            </div>
+          </div>
+
+          {selectedAnswer === null ? (
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button
+                onClick={() => handleGuess("higher")}
+                className="btn btn-primary"
+                style={{ flex: 1, background: "rgba(74,222,128,0.2)", borderColor: "#4ade80", color: "#4ade80" }}
+                id="hl-higher-btn"
+              >
+                Higher 🔼
+              </button>
+              <button
+                onClick={() => handleGuess("lower")}
+                className="btn btn-primary"
+                style={{ flex: 1, background: "rgba(248,113,113,0.2)", borderColor: "#f87171", color: "#f87171" }}
+                id="hl-lower-btn"
+              >
+                Lower 🔽
+              </button>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center" }}>
+              <p style={{
+                color: correct ? "#4ade80" : "#f87171",
+                fontWeight: 800,
+                fontSize: "1.2rem",
+                margin: "0.5rem 0"
+              }}>
+                {correct ? "Correct! 🎉" : "Incorrect! ❌"}
+              </p>
+              <button onClick={nextQuestion} className="btn btn-primary btn-sm" id="hl-next-btn">
+                {correct ? "Next Comparison" : "See Results"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============= GUESS THE CREST =============
+const crestPool = [
+  {
+    badge: "🔴🔵 🦁👑",
+    hint: "Founded in 1899. Famous for its blue and deep red stripes (Blaugrana). Supporters are called Culés.",
+    options: ["Real Madrid", "FC Barcelona", "Atletico Madrid", "Levante"],
+    correct: 1
+  },
+  {
+    badge: "⚪👑 🏟️",
+    hint: "Known as 'Los Blancos'. Renders an all-white kit with a royal crown on the crest.",
+    options: ["Valencia", "Sevilla", "Real Madrid", "Real Sociedad"],
+    correct: 2
+  },
+  {
+    badge: "🔴⚪ 🔫⚽",
+    hint: "Features a cannon emblem, hailing from North London. Nicknamed 'The Gunners'.",
+    options: ["Chelsea", "Arsenal", "Liverpool", "Manchester United"],
+    correct: 1
+  },
+  {
+    badge: "🔴😈 👹",
+    hint: "Nicknamed the 'Red Devils'. Features a devil holding a pitchfork on the crest.",
+    options: ["Manchester United", "AC Milan", "Liverpool", "Bayern Munich"],
+    correct: 0
+  },
+  {
+    badge: "🔴🔵 🗼👑",
+    hint: "Renders a red Eiffel Tower silhouette. Nicknamed 'Les Parisiens'.",
+    options: ["Lyon", "Marseille", "Monaco", "Paris Saint-Germain"],
+    correct: 3
+  },
+  {
+    badge: "⚫🔵 🇮🇹",
+    hint: "Nicknamed 'Nerazzurri' (Black and Blues). Located in Milan, Italy.",
+    options: ["Juventus", "AC Milan", "Inter Milan", "Roma"],
+    correct: 2
+  },
+  {
+    badge: "🔴🔵 😈",
+    hint: "Nicknamed 'Rossoneri' (Red and Blacks). Located in Milan, Italy.",
+    options: ["Inter Milan", "AC Milan", "Roma", "Napoli"],
+    correct: 1
+  },
+  {
+    badge: "⚫⚪ 🦓",
+    hint: "Nicknamed 'The Old Lady' (Bianconeri). Features black and white vertical stripes.",
+    options: ["Juventus", "Udinese", "Bologna", "Lazio"],
+    correct: 0
+  }
+];
+
+function GuessTheCrest({ user }) {
+  const [questions, setQuestions] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [bestScore, setBestScore] = useState(null);
+  const [quizFinished, setQuizFinished] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      getGameScores(user.uid).then((scores) => {
+        if (scores["guess-crest"] !== undefined) {
+          setBestScore(scores["guess-crest"].highScore);
+        }
+      });
+    }
+  }, [user]);
+
+  const startQuiz = () => {
+    const shuffled = [...crestPool]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5);
+    setQuestions(shuffled);
+    setCurrentIdx(0);
+    setScore(0);
+    setIsPlaying(true);
+    setSelectedOpt(null);
+    setQuizFinished(false);
+  };
+
+  const handleOptionClick = (idx) => {
+    if (selectedOpt !== null) return;
+    setSelectedOpt(idx);
+    if (idx === questions[currentIdx].correct) {
+      setScore((s) => s + 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIdx < questions.length - 1) {
+      setCurrentIdx((idx) => idx + 1);
+      setSelectedOpt(null);
+    } else {
+      setIsPlaying(false);
+      setQuizFinished(true);
+      if (user) {
+        saveGameScore(user.uid, "guess-crest", score);
+      }
+      if (bestScore === null || score > bestScore) {
+        setBestScore(score);
+      }
+    }
+  };
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>🛡️ Guess the Crest</h3>
+        {bestScore !== null && <span style={gameStyles.bestScore}>Best: {bestScore}/5</span>}
+      </div>
+
+      {!isPlaying && !quizFinished ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Guess the club based on symbols and hints! 5 rounds.</p>
+          <button onClick={startQuiz} className="btn btn-primary" id="crest-start-btn">
+            Start Quiz
+          </button>
+        </div>
+      ) : quizFinished ? (
+        <div style={gameStyles.startScreen}>
+          <p style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.5rem" }}>
+            {score} / 5 🎉
+          </p>
+          <button onClick={startQuiz} className="btn btn-primary btn-sm" id="crest-retry-btn">
+            <HiRefresh size={14} /> Try Again
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div style={gameStyles.gameStats}>
+            <span>Round {currentIdx + 1} of 5</span>
+            <span>Score: {score}</span>
+          </div>
+
+          <div style={{ textAlign: "center", padding: "1rem 0", marginBottom: "1rem" }} className="glass-subtle">
+            <span style={{ fontSize: "3rem" }}>{questions[currentIdx]?.badge}</span>
+            <p style={{ fontSize: "0.95rem", padding: "0.5rem 1rem", color: "var(--text-secondary)", margin: 0 }}>
+              {questions[currentIdx]?.hint}
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }}>
+            {questions[currentIdx]?.options.map((opt, idx) => {
+              const isSelected = selectedOpt === idx;
+              const isCorrect = idx === questions[currentIdx].correct;
+              let btnStyle = {
+                padding: "0.75rem 1rem",
+                borderRadius: "12px",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "rgba(255, 255, 255, 0.05)",
+                color: "var(--text-primary)",
+                fontWeight: 600,
+                textAlign: "left",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              };
+
+              if (selectedOpt !== null) {
+                if (isCorrect) {
+                  btnStyle.background = "rgba(74, 222, 128, 0.2)";
+                  btnStyle.borderColor = "#4ade80";
+                } else if (isSelected) {
+                  btnStyle.background = "rgba(248, 113, 113, 0.2)";
+                  btnStyle.borderColor = "#f87171";
+                } else {
+                  btnStyle.opacity = 0.5;
+                }
+              }
+
+              return (
+                <motion.button
+                  key={idx}
+                  style={btnStyle}
+                  onClick={() => handleOptionClick(idx)}
+                  whileHover={selectedOpt === null ? { scale: 1.02, background: "rgba(255, 255, 255, 0.1)" } : {}}
+                  whileTap={selectedOpt === null ? { scale: 0.98 } : {}}
+                  disabled={selectedOpt !== null}
+                >
+                  {opt}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {selectedOpt !== null && (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={handleNext} className="btn btn-primary btn-sm" id="crest-next-btn">
+                Next <HiChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============= FOOTLE (WORDLE FOOTBALLER) =============
+const footlePlayers = [
+  { name: "Lionel Messi", nation: "Argentina", league: "MLS", club: "Inter Miami", pos: "Forward", age: 38 },
+  { name: "Cristiano Ronaldo", nation: "Portugal", league: "Saudi Pro League", club: "Al-Nassr", pos: "Forward", age: 41 },
+  { name: "Erling Haaland", nation: "Norway", league: "Premier League", club: "Manchester City", pos: "Forward", age: 25 },
+  { name: "Kylian Mbappe", nation: "France", league: "La Liga", club: "Real Madrid", pos: "Forward", age: 27 },
+  { name: "Kevin De Bruyne", nation: "Belgium", league: "Premier League", club: "Manchester City", pos: "Midfielder", age: 34 },
+  { name: "Jude Bellingham", nation: "England", league: "La Liga", club: "Real Madrid", pos: "Midfielder", age: 22 },
+  { name: "Robert Lewandowski", nation: "Poland", league: "La Liga", club: "FC Barcelona", pos: "Forward", age: 37 },
+  { name: "Mohamed Salah", nation: "Egypt", league: "Premier League", club: "Liverpool", pos: "Forward", age: 33 },
+  { name: "Vinicius Jr", nation: "Brazil", league: "La Liga", club: "Real Madrid", pos: "Forward", age: 25 },
+  { name: "Neymar Jr", nation: "Brazil", league: "Saudi Pro League", club: "Al-Hilal", pos: "Forward", age: 34 },
+  { name: "Bukayo Saka", nation: "England", league: "Premier League", club: "Arsenal", pos: "Forward", age: 24 },
+  { name: "Lamine Yamal", nation: "Spain", league: "La Liga", club: "FC Barcelona", pos: "Forward", age: 18 }
+];
+
+function Footle({ user }) {
+  const [secretPlayer, setSecretPlayer] = useState(null);
+  const [guesses, setGuesses] = useState([]);
+  const [selectedGuessIdx, setSelectedGuessIdx] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [gameStatus, setGameStatus] = useState("playing"); // playing, won, lost
+  const [bestAttempts, setBestAttempts] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      getGameScores(user.uid).then((scores) => {
+        if (scores["footle"] !== undefined) {
+          setBestAttempts(scores["footle"].highScore);
+        }
+      });
+    }
+  }, [user]);
+
+  const initGame = () => {
+    const randomPlayer = footlePlayers[Math.floor(Math.random() * footlePlayers.length)];
+    setSecretPlayer(randomPlayer);
+    setGuesses([]);
+    setSelectedGuessIdx(0);
+    setGameStatus("playing");
+    setIsPlaying(true);
+  };
+
+  const submitGuess = () => {
+    if (gameStatus !== "playing") return;
+    const guessedPlayer = footlePlayers[selectedGuessIdx];
+    if (guesses.some(g => g.name === guessedPlayer.name)) return; // No duplicate guesses
+
+    const newGuesses = [...guesses, guessedPlayer];
+    setGuesses(newGuesses);
+
+    if (guessedPlayer.name === secretPlayer.name) {
+      setGameStatus("won");
+      setIsPlaying(false);
+      if (user) {
+        saveGameScore(user.uid, "footle", newGuesses.length);
+      }
+      if (bestAttempts === null || newGuesses.length < bestAttempts) {
+        setBestAttempts(newGuesses.length);
+      }
+    } else if (newGuesses.length >= 6) {
+      setGameStatus("lost");
+      setIsPlaying(false);
+    }
+  };
+
+  return (
+    <div style={gameStyles.container}>
+      <div style={gameStyles.header}>
+        <h3 style={gameStyles.gameTitle}>🧩 Footle (Wordle)</h3>
+        {bestAttempts !== null && <span style={gameStyles.bestScore}>Best: {bestAttempts} tries</span>}
+      </div>
+
+      {!isPlaying && gameStatus === "playing" ? (
+        <div style={gameStyles.startScreen}>
+          <p style={gameStyles.startText}>Guess the hidden superstar footballer in 6 tries!</p>
+          <button onClick={initGame} className="btn btn-primary" id="footle-start-btn">
+            Start Game
+          </button>
+        </div>
+      ) : !isPlaying ? (
+        <div style={gameStyles.startScreen}>
+          <p style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: "0.25rem", color: gameStatus === "won" ? "#4ade80" : "#f87171" }}>
+            {gameStatus === "won" ? `Won in ${guesses.length} tries! 🏆` : "Game Over! ❌"}
+          </p>
+          <p style={gameStyles.startText}>Secret Player: <strong>{secretPlayer?.name}</strong></p>
+          <button onClick={initGame} className="btn btn-primary btn-sm" id="footle-retry-btn">
+            <HiRefresh size={14} /> Try Again
+          </button>
+        </div>
+      ) : (
+        <div>
+          {/* Guesses Matrix */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr 1fr", gap: "0.25rem", fontSize: "0.8rem", fontWeight: 700, color: "var(--text-muted)", textAlign: "center" }}>
+              <span>Player</span>
+              <span>Nat</span>
+              <span>League</span>
+              <span>Pos</span>
+              <span>Age</span>
+            </div>
+            {guesses.map((guess, idx) => {
+              const matchesNat = guess.nation === secretPlayer.nation;
+              const matchesLeague = guess.league === secretPlayer.league;
+              const matchesClub = guess.club === secretPlayer.club;
+              const matchesPos = guess.pos === secretPlayer.pos;
+              const matchesAge = guess.age === secretPlayer.age;
+              const closeAge = Math.abs(guess.age - secretPlayer.age) <= 2;
+
+              const gridStyle = (match, close = false) => ({
+                background: match ? "rgba(74,222,128,0.25)" : close ? "rgba(251,191,36,0.25)" : "rgba(255,255,255,0.05)",
+                border: `1px solid ${match ? "#4ade80" : close ? "#fbbf24" : "rgba(255,255,255,0.1)"}`,
+                borderRadius: "6px",
+                padding: "0.35rem",
+                textAlign: "center",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "2px"
+              });
+
+              return (
+                <div key={idx} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 2fr 1fr 1fr", gap: "0.25rem" }}>
+                  <div style={gridStyle(guess.name === secretPlayer.name)}>{guess.name}</div>
+                  <div style={gridStyle(matchesNat)}>{guess.nation.substring(0, 3)}</div>
+                  <div style={gridStyle(matchesLeague)}>{guess.league}</div>
+                  <div style={gridStyle(matchesPos)}>{guess.pos.substring(0, 3)}</div>
+                  <div style={gridStyle(matchesAge, closeAge)}>
+                    {guess.age}
+                    {guess.age < secretPlayer.age && " 🔼"}
+                    {guess.age > secretPlayer.age && " 🔽"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <select
+              value={selectedGuessIdx}
+              onChange={(e) => setSelectedGuessIdx(parseInt(e.target.value))}
+              style={{
+                flex: 2,
+                padding: "0.5rem",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "10px",
+                color: "var(--text-primary)"
+              }}
+              className="select-glass"
+              id="footle-select"
+            >
+              {footlePlayers.map((player, idx) => (
+                <option key={idx} value={idx} style={{ background: "#2a2542" }}>
+                  {player.name}
+                </option>
+              ))}
+            </select>
+            <button onClick={submitGuess} className="btn btn-primary" style={{ flex: 1 }} id="footle-guess-btn">
+              Guess
+            </button>
+          </div>
+          <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.5rem", textAlign: "center" }}>
+            Tries left: {6 - guesses.length}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============= BREATHING EXERCISE =============
 function BreathingExercise() {
   const [phase, setPhase] = useState("idle"); // idle, inhale, hold, exhale
@@ -1190,6 +1756,15 @@ export default function WellbeingPage() {
             </div>
             <div className="glass-card" style={styles.gameCard}>
               <FootballQuiz user={user} />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <FootballHigherLower user={user} />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <GuessTheCrest user={user} />
+            </div>
+            <div className="glass-card" style={styles.gameCard}>
+              <Footle user={user} />
             </div>
           </motion.div>
         )}
