@@ -2252,8 +2252,6 @@ function BreathingExercise() {
 export default function WellbeingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState("music");
-
   const {
     isPlaying,
     currentTrack,
@@ -2275,7 +2273,9 @@ export default function WellbeingPage() {
     setIsRepeat,
     setIsShuffle,
     isRepeat,
-    isShuffle
+    isShuffle,
+    activeWellbeingSection: activeSection,
+    setActiveWellbeingSection: setActiveSection
   } = useMusic();
 
   useEffect(() => {

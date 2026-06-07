@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useMusic } from "@/lib/music-context";
 import { HiPlay, HiPause, HiVolumeUp, HiVolumeOff, HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { MdLoop, MdDragIndicator, MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
 
 export default function FloatingMusicPlayer() {
+  const pathname = usePathname();
   const {
     isPlaying,
     currentTrack,
@@ -20,7 +22,8 @@ export default function FloatingMusicPlayer() {
     volume,
     setVolume,
     isMuted,
-    setIsMuted
+    setIsMuted,
+    activeWellbeingSection
   } = useMusic();
 
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -129,6 +132,7 @@ export default function FloatingMusicPlayer() {
   }, [isDragging, position, isMinimized]);
 
   if (!mounted || !currentTrack) return null;
+  if (pathname === "/wellbeing" && activeWellbeingSection === "music") return null;
 
   const formatTime = (time) => {
     if (isNaN(time)) return "0:00";
