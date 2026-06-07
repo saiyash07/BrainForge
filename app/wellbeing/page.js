@@ -15,20 +15,21 @@ const musicGenres = {
     label: "Sad / Emotional",
     color: "#a78bfa",
     tracks: [
-      { id: "sad-1", title: "Daylight", artist: "David Kushner", videoId: "MoN9ql6Yymw", cover: "🌅" },
-      { id: "sad-2", title: "Love Me Not", artist: "Ravyn Lenae & Rex Orange County", videoId: "FNdC1AJnzQE", cover: "🥀" },
-      { id: "sad-2-solo", title: "Love Me Not (Solo Version)", artist: "Ravyn Lenae", videoId: "FNdC1AJnzQE", cover: "🥀" },
+      { id: "sad-1", title: "Daylight", artist: "David Kushner", videoId: "PZtwxD5Myk0", cover: "🌅" },
+      { id: "sad-2", title: "Love Me Not", artist: "Ravyn Lenae & Rex Orange County", videoId: "ES5nF0bvCtc", cover: "🥀" },
+      { id: "sad-2-solo", title: "Love Me Not (Solo Version)", artist: "Ravyn Lenae", videoId: "cswfR85D7jM", cover: "🥀" },
       { id: "sad-3", title: "Mary on a Cross", artist: "Ghost", videoId: "1K36RVwEG-k", cover: "✝️" },
       { id: "sad-4", title: "Prom Queen", artist: "Beach Bunny", videoId: "FOXIF36YPTM", cover: "👑" },
       { id: "sad-5", title: "Little Dark Age", artist: "MGMT", videoId: "BoatSoGva_I", cover: "🕰️" },
       { id: "sad-6", title: "Let Down", artist: "Radiohead", videoId: "Ge4EUrjZ3DE", cover: "🎈" },
       { id: "sad-7", title: "Love Story", artist: "Indila", videoId: "DF3XjEhJ40Y", cover: "📖" },
-      { id: "sad-8", title: "Spirits", artist: "The Strumbellas", videoId: "F9kXstb9FF4", cover: "👻" },
+      { id: "sad-8", title: "Spirits", artist: "The Strumbellas", videoId: "TqEeA9Zd3J8", cover: "👻" },
       { id: "sad-9", title: "Play Date", artist: "Melanie Martinez", videoId: "rODr5Zfj8RA", cover: "🧸" },
       { id: "sad-10", title: "Heat Waves", artist: "Glass Animals", videoId: "mRD0-GxqHVo", cover: "☀️" },
       { id: "sad-11", title: "Somewhere Only We Know", artist: "Keane", videoId: "-HwPKDlb3e8", cover: "🌲" },
       { id: "sad-12", title: "Bitter Sweet Symphony", artist: "The Verve", videoId: "tvx_W4UFVDc", cover: "🎻" },
-      { id: "sad-13", title: "Somebody That I Used to Know", artist: "Gotye", videoId: "t_dLoOXy8PA", cover: "👥" }
+      { id: "sad-13", title: "Somebody That I Used to Know", artist: "Gotye", videoId: "t_dLoOXy8PA", cover: "👥" },
+      { id: "sad-14", title: "The Night We Met", artist: "Lord Huron", videoId: "wGF7PswOENQ", cover: "🌌" }
     ]
   },
   rock: {
@@ -68,7 +69,7 @@ const musicGenres = {
       { id: "hiphop-2", title: "Dust", artist: "Drake", videoId: "p_-NmqmK8CU", cover: "🌪️" },
       { id: "hiphop-3", title: "Whisper My Name", artist: "Drake", videoId: "MoWIDYuGDNA", cover: "🤫" },
       { id: "hiphop-4", title: "Janice STFU", artist: "Drake", videoId: "lidVunzH_1Y", cover: "🤐" },
-      { id: "hiphop-5", title: "Ran To Atlanta", artist: "Drake", videoId: "nuvsKxcE7TI", cover: "✈️" },
+      { id: "hiphop-5", title: "Ran To Atlanta", artist: "Drake & Future", videoId: "ipOSrQNrp1U", cover: "✈️" },
       { id: "hiphop-6", title: "Shabang", artist: "Drake", videoId: "eBKyvfgt1Es", cover: "💥" },
       { id: "hiphop-7", title: "Make Them Pay", artist: "Drake", videoId: "XSiEA19SeNE", cover: "💰" },
       { id: "hiphop-8", title: "What You Saying", artist: "Lil Uzi Vert", videoId: "jSpazjVFm6k", cover: "🗣️" }
