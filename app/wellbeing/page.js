@@ -15,7 +15,7 @@ const musicGenres = {
     label: "Sad / Emotional",
     color: "#a78bfa",
     tracks: [
-      { id: "sad-1", title: "Daylight", artist: "David Kushner", videoId: "PZtwxD5Myk0", cover: "🌅" },
+      { id: "sad-1", title: "Daylight", artist: "David Kushner", videoId: "73E0BnFs7S4", cover: "🌅" },
       { id: "sad-2", title: "Love Me Not", artist: "Ravyn Lenae & Rex Orange County", videoId: "ES5nF0bvCtc", cover: "🥀" },
       { id: "sad-2-solo", title: "Love Me Not (Solo Version)", artist: "Ravyn Lenae", videoId: "cswfR85D7jM", cover: "🥀" },
       { id: "sad-3", title: "Mary on a Cross", artist: "Ghost", videoId: "1K36RVwEG-k", cover: "✝️" },
