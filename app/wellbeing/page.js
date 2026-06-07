@@ -1652,6 +1652,7 @@ const shootoutTeams = [
 ];
 
 function PenaltyShootout({ user }) {
+  const [gameMode, setGameMode] = useState("1player"); // '1player' or '2player'
   const [myTeam, setMyTeam] = useState(null);
   const [oppTeam, setOppTeam] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1666,6 +1667,11 @@ function PenaltyShootout({ user }) {
   const [powerPercent, setPowerPercent] = useState(0);
   const [isPowerActive, setIsPowerActive] = useState(false);
   
+  // 2-Player mode state
+  const [kickerCorner, setKickerCorner] = useState(null);
+  const [kickerPower, setKickerPower] = useState(0);
+  const [isKickerLocked, setIsKickerLocked] = useState(false);
+
   const [resultMsg, setResultMsg] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -1705,11 +1711,18 @@ function PenaltyShootout({ user }) {
   }, [isPowerActive]);
 
   const selectTeams = (team, role) => {
-    if (role === "mine") {
-      setMyTeam(team);
-      // Automatically choose different opponent
-      const remaining = shootoutTeams.filter(t => t.name !== team.name);
-      setOppTeam(remaining[Math.floor(Math.random() * remaining.length)]);
+    if (gameMode === "1player") {
+      if (role === "mine") {
+        setMyTeam(team);
+        const remaining = shootoutTeams.filter(t => t.name !== team.name);
+        setOppTeam(remaining[Math.floor(Math.random() * remaining.length)]);
+      }
+    } else {
+      if (role === "mine") {
+        setMyTeam(team);
+      } else {
+        setOppTeam(team);
+      }
     }
   };
 
@@ -1723,6 +1736,9 @@ function PenaltyShootout({ user }) {
     setSelectedCorner(null);
     setPowerPercent(0);
     setIsPowerActive(false);
+    setKickerCorner(null);
+    setKickerPower(0);
+    setIsKickerLocked(false);
     setGameOver(false);
     setWinner(null);
     setIsPlaying(true);
@@ -1731,21 +1747,64 @@ function PenaltyShootout({ user }) {
 
   const chooseCorner = (corner) => {
     if (showResult) return;
-    setSelectedCorner(corner);
-    if (turn === "shoot") {
-      // Start the power slider
-      setPowerPercent(0);
-      setIsPowerActive(true);
+    
+    if (gameMode === "1player") {
+      setSelectedCorner(corner);
+      if (turn === "shoot") {
+        setPowerPercent(0);
+        setIsPowerActive(true);
+      } else {
+        handleDefend(corner);
+      }
     } else {
-      // User is goalkeeper defending
-      handleDefend(corner);
+      // 2-Player mode
+      if (!isKickerLocked) {
+        setSelectedCorner(corner);
+        setPowerPercent(0);
+        setIsPowerActive(true);
+      } else {
+        handleTwoPlayerResult(corner);
+      }
     }
   };
 
   const lockPower = () => {
     if (!isPowerActive) return;
     setIsPowerActive(false);
-    handleShoot();
+    
+    if (gameMode === "1player") {
+      handleShoot();
+    } else {
+      setKickerCorner(selectedCorner);
+      setKickerPower(powerPercent);
+      setIsKickerLocked(true);
+      setSelectedCorner(null);
+    }
+  };
+
+  const checkGameOverImmediate = (currentMyScore, currentOppScore, myKicks, oppKicks) => {
+    const regularRounds = 5;
+    const maxMyScore = currentMyScore + Math.max(0, regularRounds - myKicks);
+    const maxOppScore = currentOppScore + Math.max(0, regularRounds - oppKicks);
+    
+    if (currentMyScore > maxOppScore) {
+      endGame(myTeam);
+      return true;
+    }
+    if (currentOppScore > maxMyScore) {
+      endGame(oppTeam);
+      return true;
+    }
+    
+    // Sudden death criteria
+    if (myKicks >= regularRounds && oppKicks >= regularRounds && myKicks === oppKicks) {
+      if (currentMyScore !== currentOppScore) {
+        const winnerTeam = currentMyScore > currentOppScore ? myTeam : oppTeam;
+        endGame(winnerTeam);
+        return true;
+      }
+    }
+    return false;
   };
 
   const handleShoot = () => {
@@ -1768,12 +1827,16 @@ function PenaltyShootout({ user }) {
     newAttempts[round] = isGoal ? "goal" : "save";
     setMyAttempts(newAttempts);
 
+    let nextScore = myScore;
     if (isGoal) {
-      setMyScore((s) => s + 1);
+      nextScore = myScore + 1;
+      setMyScore(nextScore);
     }
 
     setResultMsg(msg);
     setShowResult(true);
+
+    checkGameOverImmediate(nextScore, oppScore, round + 1, round);
   };
 
   const handleDefend = (userDive) => {
@@ -1792,61 +1855,82 @@ function PenaltyShootout({ user }) {
     newAttempts[round] = isGoal ? "goal" : "save";
     setOppAttempts(newAttempts);
 
+    let nextScore = oppScore;
     if (isGoal) {
-      setOppScore((s) => s + 1);
+      nextScore = oppScore + 1;
+      setOppScore(nextScore);
     }
 
     setResultMsg(msg);
     setShowResult(true);
+
+    checkGameOverImmediate(myScore, nextScore, round + 1, round + 1);
+  };
+
+  const handleTwoPlayerResult = (keeperCorner) => {
+    const hasPrecisePower = kickerPower >= 35 && kickerPower <= 85;
+    let isGoal = false;
+    let msg = "";
+    
+    const kickerName = turn === "shoot" ? "Player 1" : "Player 2";
+    const keeperName = turn === "shoot" ? "Player 2" : "Player 1";
+    
+    if (!hasPrecisePower) {
+      msg = `${kickerName} missed! The shot went wide! ❌`;
+    } else if (keeperCorner === kickerCorner) {
+      msg = `Saved! ${keeperName} made a brilliant save! 🧤`;
+    } else {
+      isGoal = true;
+      msg = `Goal! ${kickerName} scored with a clinical finish! ⚽🔥`;
+    }
+
+    let nextMyScore = myScore;
+    let nextOppScore = oppScore;
+    
+    if (turn === "shoot") {
+      const newAttempts = [...myAttempts];
+      newAttempts[round] = isGoal ? "goal" : "save";
+      setMyAttempts(newAttempts);
+      if (isGoal) {
+        nextMyScore = myScore + 1;
+        setMyScore(nextMyScore);
+      }
+    } else {
+      const newAttempts = [...oppAttempts];
+      newAttempts[round] = isGoal ? "goal" : "save";
+      setOppAttempts(newAttempts);
+      if (isGoal) {
+        nextOppScore = oppScore + 1;
+        setOppScore(nextOppScore);
+      }
+    }
+
+    setResultMsg(msg);
+    setShowResult(true);
+
+    const myKicks = turn === "shoot" ? round + 1 : round + 1;
+    const oppKicks = turn === "shoot" ? round : round + 1;
+    checkGameOverImmediate(nextMyScore, nextOppScore, myKicks, oppKicks);
   };
 
   const nextTurn = () => {
     setShowResult(false);
     setSelectedCorner(null);
     setPowerPercent(0);
+    setIsKickerLocked(false);
+    setKickerCorner(null);
 
     if (turn === "shoot") {
       setTurn("save");
     } else {
-      // Check if game is over after a full round
-      const isEnded = checkGameOverState();
-      if (!isEnded) {
-        setRound((r) => r + 1);
-        setTurn("shoot");
-        
-        // Handle sudden death expansion if we go beyond round 5
-        if (round >= 4) {
-          setMyAttempts((att) => [...att, null]);
-          setOppAttempts((att) => [...att, null]);
-        }
+      setRound((r) => r + 1);
+      setTurn("shoot");
+      
+      if (round >= 4) {
+        setMyAttempts((att) => [...att, null]);
+        setOppAttempts((att) => [...att, null]);
       }
     }
-  };
-
-  const checkGameOverState = () => {
-    const currentRound = round + 1;
-    const remainingRounds = Math.max(0, 5 - currentRound);
-    
-    // Check if one team has mathematically won already
-    if (myScore > oppScore + remainingRounds) {
-      endGame(myTeam);
-      return true;
-    }
-    if (oppScore > myScore + remainingRounds) {
-      endGame(oppTeam);
-      return true;
-    }
-
-    // Sudden death criteria
-    if (currentRound >= 5 && myScore === oppScore) {
-      return false; // Continue sudden death
-    } else if (currentRound >= 5 && myScore !== oppScore) {
-      const winnerTeam = myScore > oppScore ? myTeam : oppTeam;
-      endGame(winnerTeam);
-      return true;
-    }
-
-    return false;
   };
 
   const endGame = (winningTeam) => {
@@ -1854,16 +1938,18 @@ function PenaltyShootout({ user }) {
     setIsPlaying(false);
     setWinner(winningTeam);
     
-    if (winningTeam.name === myTeam.name) {
-      const newStreak = bestStreak + 1;
-      setBestStreak(newStreak);
-      if (user) {
-        saveGameScore(user.uid, "penalty-shootout", newStreak);
-      }
-    } else {
-      setBestStreak(0);
-      if (user) {
-        saveGameScore(user.uid, "penalty-shootout", 0);
+    if (gameMode === "1player") {
+      if (winningTeam.name === myTeam.name) {
+        const newStreak = bestStreak + 1;
+        setBestStreak(newStreak);
+        if (user) {
+          saveGameScore(user.uid, "penalty-shootout", newStreak);
+        }
+      } else {
+        setBestStreak(0);
+        if (user) {
+          saveGameScore(user.uid, "penalty-shootout", 0);
+        }
       }
     }
   };
@@ -1872,28 +1958,100 @@ function PenaltyShootout({ user }) {
     <div style={gameStyles.container}>
       <div style={gameStyles.header}>
         <h3 style={gameStyles.gameTitle}>🥅 Penalty Shootout</h3>
-        <span style={gameStyles.bestScore}>Win Streak: {bestStreak}</span>
+        {gameMode === "1player" && <span style={gameStyles.bestScore}>Win Streak: {bestStreak}</span>}
+        {gameMode === "2player" && <span style={gameStyles.bestScore}>2-Player Mode</span>}
       </div>
 
       {!isPlaying && !gameOver ? (
         <div style={gameStyles.startScreen}>
-          <p style={gameStyles.startText}>Select your team to begin a penalty shootout!</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", width: "100%", marginBottom: "1rem" }}>
-            {shootoutTeams.map((team, idx) => (
-              <button
-                key={idx}
-                onClick={() => selectTeams(team, "mine")}
-                className="btn btn-glass btn-sm"
-                style={{
-                  border: myTeam?.name === team.name ? `1px solid ${team.color}` : "1px solid rgba(255,255,255,0.1)",
-                  background: myTeam?.name === team.name ? `${team.color}22` : "rgba(255,255,255,0.05)"
-                }}
-              >
-                {team.emoji} {team.name}
-              </button>
-            ))}
+          {/* Mode Selector */}
+          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", width: "100%" }}>
+            <button
+              onClick={() => {
+                setGameMode("1player");
+                setMyTeam(null);
+                setOppTeam(null);
+              }}
+              className={`btn btn-sm ${gameMode === "1player" ? "btn-primary" : "btn-glass"}`}
+              style={{ flex: 1 }}
+            >
+              👤 1-Player
+            </button>
+            <button
+              onClick={() => {
+                setGameMode("2player");
+                setMyTeam(null);
+                setOppTeam(null);
+              }}
+              className={`btn btn-sm ${gameMode === "2player" ? "btn-primary" : "btn-glass"}`}
+              style={{ flex: 1 }}
+            >
+              👥 2-Player Local
+            </button>
           </div>
-          {myTeam && (
+
+          {gameMode === "1player" ? (
+            <>
+              <p style={gameStyles.startText}>Select your team to begin!</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", width: "100%", marginBottom: "1rem" }}>
+                {shootoutTeams.map((team, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => selectTeams(team, "mine")}
+                    className="btn btn-glass btn-sm"
+                    style={{
+                      border: myTeam?.name === team.name ? `1px solid ${team.color}` : "1px solid rgba(255,255,255,0.1)",
+                      background: myTeam?.name === team.name ? `${team.color}22` : "rgba(255,255,255,0.05)"
+                    }}
+                  >
+                    {team.emoji} {team.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={gameStyles.startText}>Player 1: Select your team</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", width: "100%", marginBottom: "1rem" }}>
+                {shootoutTeams.map((team, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => selectTeams(team, "mine")}
+                    className="btn btn-glass btn-sm"
+                    style={{
+                      border: myTeam?.name === team.name ? `1px solid ${team.color}` : "1px solid rgba(255,255,255,0.1)",
+                      background: myTeam?.name === team.name ? `${team.color}22` : "rgba(255,255,255,0.05)"
+                    }}
+                  >
+                    {team.emoji} {team.name}
+                  </button>
+                ))}
+              </div>
+
+              {myTeam && (
+                <>
+                  <p style={gameStyles.startText}>Player 2: Select your team</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", width: "100%", marginBottom: "1rem" }}>
+                    {shootoutTeams.filter(t => t.name !== myTeam.name).map((team, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => selectTeams(team, "opp")}
+                        className="btn btn-glass btn-sm"
+                        style={{
+                          border: oppTeam?.name === team.name ? `1px solid ${team.color}` : "1px solid rgba(255,255,255,0.1)",
+                          background: oppTeam?.name === team.name ? `${team.color}22` : "rgba(255,255,255,0.05)"
+                        }}
+                      >
+                        {team.emoji} {team.name}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          {myTeam && oppTeam && (
             <button onClick={startShootout} className="btn btn-primary" id="shootout-start-btn">
               Vs {oppTeam?.name} ⚽
             </button>
@@ -1909,7 +2067,9 @@ function PenaltyShootout({ user }) {
             {myScore} - {oppScore}
           </p>
           <p style={gameStyles.startText}>
-            {winner?.name === myTeam?.name ? "Congratulations, victory is yours! 🎉" : "Defeat! Better luck next time."}
+            {gameMode === "1player"
+              ? (winner?.name === myTeam?.name ? "Congratulations, victory is yours! 🎉" : "Defeat! Better luck next time.")
+              : `Victory for ${winner?.name}! 🥳`}
           </p>
           <button onClick={startShootout} className="btn btn-primary btn-sm" id="shootout-retry-btn">
             Play Again
@@ -1920,7 +2080,15 @@ function PenaltyShootout({ user }) {
           {/* Match Info & Scoreboard */}
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.75rem", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "0.5rem" }}>
             <span style={{ color: myTeam?.color }}>{myTeam?.emoji} {myScore}</span>
-            <span>Round {round + 1} ({turn === "shoot" ? "Your Kick" : "Your Save"})</span>
+            <span>
+              Round {round + 1} &middot; {
+                gameMode === "1player"
+                  ? (turn === "shoot" ? "Your Kick" : "Your Save")
+                  : (isKickerLocked
+                      ? `${turn === "shoot" ? "Player 2" : "Player 1"} Save 🧤`
+                      : `${turn === "shoot" ? "Player 1" : "Player 2"} Kick ⚽`)
+              }
+            </span>
             <span style={{ color: oppTeam?.color }}>{oppScore} {oppTeam?.emoji}</span>
           </div>
 
@@ -1964,14 +2132,18 @@ function PenaltyShootout({ user }) {
                 <button
                   key={corner}
                   onClick={() => chooseCorner(corner)}
-                  disabled={selectedCorner !== null}
+                  disabled={
+                    gameMode === "1player"
+                      ? selectedCorner !== null
+                      : (isKickerLocked ? showResult : selectedCorner !== null)
+                  }
                   style={{
                     border: "1px dashed rgba(255,255,255,0.15)",
                     background: isSelected ? "rgba(108,99,255,0.25)" : "transparent",
                     color: isSelected ? "var(--accent)" : "rgba(255,255,255,0.3)",
                     fontWeight: 700,
                     fontSize: "0.75rem",
-                    cursor: selectedCorner !== null ? "default" : "pointer",
+                    cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1984,8 +2156,23 @@ function PenaltyShootout({ user }) {
             })}
           </div>
 
-          {/* Power Precision Slider (Active on Shoot) */}
-          {turn === "shoot" && selectedCorner !== null && (
+          {/* Masking overlay when target is locked in 2-Player mode */}
+          {gameMode === "2player" && isKickerLocked && !showResult && (
+            <div style={{
+              marginTop: "0.75rem",
+              padding: "0.5rem",
+              background: "rgba(0,0,0,0.4)",
+              borderRadius: "6px",
+              textAlign: "center",
+              fontSize: "0.85rem",
+              border: "1px solid rgba(255,255,255,0.1)"
+            }}>
+              🔒 <strong>Target Locked!</strong> Pass device to Goalkeeper to dive.
+            </div>
+          )}
+
+          {/* Power Precision Slider */}
+          {!showResult && ((gameMode === "1player" && turn === "shoot" && selectedCorner !== null) || (gameMode === "2player" && !isKickerLocked && selectedCorner !== null)) && (
             <div style={{ marginTop: "1rem" }}>
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.25rem", textAlign: "center" }}>
                 Precision: Lock the bar in the Green Zone (35% - 85%)!
@@ -1998,7 +2185,7 @@ function PenaltyShootout({ user }) {
               </div>
               {isPowerActive && (
                 <button onClick={lockPower} className="btn btn-primary btn-sm" style={{ width: "100%", marginTop: "0.75rem" }} id="shootout-lock-btn">
-                  Shoot! ⚽
+                  Lock Power! ⚽
                 </button>
               )}
             </div>
