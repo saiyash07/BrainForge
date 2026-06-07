@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMusic } from "@/lib/music-context";
 import { HiPlay, HiPause, HiVolumeUp, HiVolumeOff, HiChevronLeft, HiChevronRight } from "react-icons/hi";
-import { IoIosRepeat, IoIosTrendingUp } from "react-icons/io";
-import { MdLoop, MdDragIndicator, MdClose, MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
+import { MdLoop, MdDragIndicator, MdKeyboardArrowUp, MdKeyboardArrowDown } from "react-icons/md";
 
 export default function FloatingMusicPlayer() {
   const {
@@ -35,12 +34,19 @@ export default function FloatingMusicPlayer() {
   // Initialize player position in bottom-right corner when mounted
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedX = localStorage.getItem("floating-music-x");
-      const savedY = localStorage.getItem("floating-music-y");
-      if (savedX !== null && savedY !== null) {
-        setPosition({ x: parseInt(savedX), y: parseInt(savedY) });
-      } else {
-        // Default to bottom right
+      try {
+        const savedX = localStorage.getItem("floating-music-x");
+        const savedY = localStorage.getItem("floating-music-y");
+        if (savedX !== null && savedY !== null) {
+          setPosition({ x: parseInt(savedX), y: parseInt(savedY) });
+        } else {
+          // Default to bottom right
+          const x = window.innerWidth - 340;
+          const y = window.innerHeight - 180;
+          setPosition({ x: x > 0 ? x : 20, y: y > 0 ? y : 20 });
+        }
+      } catch (err) {
+        console.error("Failed to read from localStorage:", err);
         const x = window.innerWidth - 340;
         const y = window.innerHeight - 180;
         setPosition({ x: x > 0 ? x : 20, y: y > 0 ? y : 20 });
@@ -92,8 +98,12 @@ export default function FloatingMusicPlayer() {
     const handleMouseUp = () => {
       if (isDragging) {
         setIsDragging(false);
-        localStorage.setItem("floating-music-x", position.x.toString());
-        localStorage.setItem("floating-music-y", position.y.toString());
+        try {
+          localStorage.setItem("floating-music-x", position.x.toString());
+          localStorage.setItem("floating-music-y", position.y.toString());
+        } catch (err) {
+          console.error("Failed to save to localStorage:", err);
+        }
       }
     };
 
