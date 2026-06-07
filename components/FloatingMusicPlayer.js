@@ -26,10 +26,16 @@ export default function FloatingMusicPlayer() {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   const playerRef = useRef(null);
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPos = useRef({ x: 0, y: 0 });
+
+  // Set mounted true on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Initialize player position in bottom-right corner when mounted
   useEffect(() => {
@@ -122,7 +128,7 @@ export default function FloatingMusicPlayer() {
     };
   }, [isDragging, position, isMinimized]);
 
-  if (!currentTrack) return null;
+  if (!mounted || !currentTrack) return null;
 
   const formatTime = (time) => {
     if (isNaN(time)) return "0:00";
