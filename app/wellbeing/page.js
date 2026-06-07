@@ -1439,8 +1439,6 @@ function ThisOrThat() {
   );
 }
 
-}
-
 // ============= TRANSFER CONNECT =============
 const transferPool = [
   {
