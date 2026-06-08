@@ -2,6 +2,30 @@
 
 BrainForge is an AI-powered, all-in-one student productivity and learning platform. Built with Next.js, Firebase, and the Google Gemini API, it helps students automatically generate course materials from PDFs, track their energy-based tasks, manage their automated college timetables, and monitor their overall wellbeing.
 
+## 📸 Application Screenshots
+
+Here is a visual walkthrough of the **BrainForge** workspace:
+
+| 🌐 Landing & Login Page | 🏠 Dashboard |
+|:---:|:---:|
+| ![Landing](screenshots/01_landing.png) | ![Dashboard](screenshots/02_dashboard.png) |
+
+| ⚡ Energy-Based Tasks | 📅 Automated Calendar |
+|:---:|:---:|
+| ![Tasks](screenshots/03_tasks.png) | ![Calendar](screenshots/04_calendar.png) |
+
+| 🤖 AI Subjects Hub | 📖 Course Content Generator |
+|:---:|:---:|
+| ![Subjects](screenshots/05_subjects.png) | ![Subject Detail](screenshots/06_subject_detail.png) |
+
+| 🧘 Wellbeing Tracker | 📈 Progress Statistics |
+|:---:|:---:|
+| ![Wellbeing](screenshots/07_wellbeing.png) | ![Statistics](screenshots/08_statistics.png) |
+
+| 🇩🇪 German Practice |
+|:---:|
+| ![German](screenshots/09_german.png) |
+
 ## 🌟 Key Features
 
 * **🤖 AI Subject Generator**: Upload a PDF syllabus or textbook, and our Gemini 1.5 Flash integration automatically extracts the topics, structures them into detailed modules, and generates 10 practice questions with hidden solutions!
